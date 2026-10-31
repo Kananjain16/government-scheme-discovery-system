@@ -1,0 +1,5 @@
+USE THIS FOR INSTALLING BECAUSE PIP IS POINTING TO OLDER VERSION OF PYTHON
+python -m pip install package-name
+
+TO START THE BACKEND
+python -m backend.run
