@@ -2,16 +2,12 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from backend.database.db import get_connection, create_tables
+from backend.database.connection import get_connection, create_tables
 
 app = Flask(__name__)
 
 # Allow frontend applications to communicate with Flask
 CORS(app)
-
-# Ensure database table exists
-create_tables()
-
 
 @app.route("/", methods=["GET"])
 def home():
