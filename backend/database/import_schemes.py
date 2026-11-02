@@ -2,7 +2,7 @@
 import pandas as pd
 from pathlib import Path
 
-from backend.database.connection import get_connection
+from backend.database.db import get_connection
 
 
 # Project root

@@ -1,0 +1,51 @@
+query,rank,scheme_id,scheme_name,score
+scholarships for higher education,1,3295,Vikramaditya Yojna,0.1452
+scholarships for higher education,2,851,Economic Help To Tribal Girls For Higher Education (Class 11 & 12),0.1401
+scholarships for higher education,3,1108,Free Books Scheme for Scheduled Caste Students Pursuing Higher Education,0.139
+scholarships for higher education,4,852,Economic Help To Tribal Girls For Higher Education (College Level),0.1317
+scholarships for higher education,5,656,Dayanand Bandodkar Scheme For Higher Education For Orphans,0.1306
+scholarships for higher education,6,1354,Housing Assistance (Madhya Pradesh),0.1302
+scholarships for higher education,7,937,Fee Waiver Scheme For SC/ST Students Pursuing Higher Education,0.1301
+scholarships for higher education,8,1170,Gaon Ki Beti,0.1252
+scholarships for higher education,9,2788,Scheme for Reimbursement of Educational Expenses to Hearing Impaired Students Pursuing Special Higher Education Courses Inside or Outside the Union Territory of Puducherry,0.1199
+scholarships for higher education,10,2396,Post Metric Scholarship For OBC Students,0.1187
+financial support for farmers,1,2263,One Time Financial Support for Economically Weaker Meritorious ST Students,0.0961
+financial support for farmers,2,943,Female Child Birth Gift Scheme (HPBOCWWB),0.0835
+financial support for farmers,3,2854,Scheme to Provide Grant to the Institutions for Long Term Project in the Field of Art and Culture (Sarjansheel Goa),0.0789
+financial support for farmers,4,596,Coconut Development Scheme,0.0758
+financial support for farmers,5,1085,Financial Support Scheme,0.0744
+financial support for farmers,6,831,Dr.Babasaheb Ambedkar Udyog Uday Yojana: Financial Support to MSMEs in ZED Certification,0.0741
+financial support for farmers,7,2160,National Handicrafts Development Programme: Direct Benefit to Artisans - Supports to Artisans in Indigent Circumstances,0.0739
+financial support for farmers,8,1002,Financial Assistance for Marriage (HPBOCWWB),0.0725
+financial support for farmers,9,2746,"Scheme for Campaign, Seminar and Sports under Disability Sector",0.071
+financial support for farmers,10,481,Capital Contribution Scheme (Goa),0.0685
+benefits for senior citizens,1,2660,Sanctioning Spectacles to Senior Citizens,0.1074
+benefits for senior citizens,2,1114,Free Distribution of Blankets and Chappals to Senior Citizen,0.1073
+benefits for senior citizens,3,2245,Old Age Homes - Tamil Nadu,0.1063
+benefits for senior citizens,4,2269,Operation of SC Senior Hostel,0.1017
+benefits for senior citizens,5,2662,Sanctioning of M.C.R. Chappals to Senior Citizens,0.1011
+benefits for senior citizens,6,2656,Sanction of Adult Sticks to Senior Citizens,0.0993
+benefits for senior citizens,7,2337,Pension Scheme to Old Age Persons (Senior Citizen),0.0901
+benefits for senior citizens,8,811,Dr. P. G. Solanki Scheme for Stipend to Scheduled Caste Lawyers,0.0886
+benefits for senior citizens,9,2766,Scheme for Giving Awards to Senior Artists in Contemporary Art Field,0.0878
+benefits for senior citizens,10,3040,State Senior Citizens Home,0.0854
+financial assistance for small businesses,1,774,District Central Cooperative Banks and through its Branches: Small Road Transport Operators Loan (SRTO Loan),0.0997
+financial assistance for small businesses,2,3368,Women Self Employment Scheme,0.0941
+financial assistance for small businesses,3,966,Financial Assistance To Disabled For Self Employment,0.0774
+financial assistance for small businesses,4,977,Financial Assistance To Purchase Singel Net / Small Rampon Net & Its Accessories,0.0741
+financial assistance for small businesses,5,2740,"Scheme for Assistance to Micro, Small and Medium Enterprises (MSME): Assistance in Rent to MSEs",0.0722
+financial assistance for small businesses,6,968,Financial Assistance To Ex-Convicts,0.0717
+financial assistance for small businesses,7,2739,"Scheme for Assistance to Micro, Small and Medium Enterprises (MSME): Assistance in Implementation of Information and Communication Technology (ICT)",0.0708
+financial assistance for small businesses,8,2742,"Scheme for Assistance to Micro, Small and Medium Enterprises (MSME): Financial Support to MSMEs in ZED Certification",0.0701
+financial assistance for small businesses,9,744,Distress Relief Scheme,0.0699
+financial assistance for small businesses,10,2975,Small Industries Unit for Persons with Disabilities,0.0662
+worker life future security scheme,1,10,Nirman Shramik Jeevan va Bhavishya Suraksha Yojana,0.1025
+worker life future security scheme,2,2325,Pension Scheme (BBOCWWB),0.057
+worker life future security scheme,3,3350,West Bengal Transport Workers’ Social Security Scheme: Pension,0.0497
+worker life future security scheme,4,3342,West Bengal Transport Workers’ Social Security Scheme: Assistance for Marriage,0.0473
+worker life future security scheme,5,3347,West Bengal Transport Workers’ Social Security Scheme: Funeral Expenses,0.0471
+worker life future security scheme,6,3348,West Bengal Transport Workers’ Social Security Scheme: Maternity Benefit,0.0464
+worker life future security scheme,7,3345,West Bengal Transport Workers’ Social Security Scheme: Assistance on Hospitalization,0.0459
+worker life future security scheme,8,3346,West Bengal Transport Workers’ Social Security Scheme: Family Pension,0.0454
+worker life future security scheme,9,3343,West Bengal Transport Workers’ Social Security Scheme: Assistance for Purchase of Spectacles,0.0451
+worker life future security scheme,10,3341,West Bengal Transport Workers’ Social Security Scheme: Assistance for Education of Children,0.0448

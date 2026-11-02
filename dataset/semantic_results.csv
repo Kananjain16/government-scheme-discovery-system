@@ -1,0 +1,61 @@
+query,rank,scheme_id,scheme_name,score
+scholarships for higher education,1,525,Chief Minister Higher Education Encouragement Scholarship Scheme,0.5981
+scholarships for higher education,2,1087,Financial Support To The Students Of N.E.R For Higher Professional Courses (NEC Merit Scholarship),0.5883
+scholarships for higher education,3,3150,Technical Education Scholarship Scheme For Diploma Level,0.5741
+scholarships for higher education,4,1899,Merit Cum Means Based Scholarship For Students Belonging To The Minority Communities,0.5705
+scholarships for higher education,5,2867,Scholarship Scheme For Disabled Students To Study Abroad For Higher Education,0.5659
+scholarships for higher education,6,2385,Post Matric Scholarship For Minorities,0.5638
+scholarships for higher education,7,526,Chief Minister Higher Education Scholarship Scheme,0.5617
+scholarships for higher education,8,2882,Scholarships For Higher Education Abroad To Meritorious Boys And Girls From Open Category,0.5583
+scholarships for higher education,9,3149,Technical Education Scholarship Scheme For Degree Level,0.5562
+scholarships for higher education,10,1421,Indian Agricultural Research Institute - Scholarship,0.554
+financial support for farmers,1,104,AGR-61 Agro Service Providers for the Purpose of Making Farming More Profitable With the Help of Farm Mechanization,0.634
+financial support for farmers,2,210,Agriculture Infrastructure Fund,0.6059
+financial support for farmers,3,3076,Subsidy Scheme on Establishment of 25 R.I.R. Bird’s unit 40 R.I.R. Bird’s Unit and Stipend for Poultry Farming Training,0.5943
+financial support for farmers,4,895,Establishment of 1 to 20 Milch Animal Farm,0.5913
+financial support for farmers,5,2712,Scheme For Subsidy On Interest For Establishment Of 1 To 20 Milch Animal Farm For Scheduled Tribe,0.5814
+financial support for farmers,6,961,Financial Assistance Scheme for Purchase of Agricultural Land to Scheduled Caste Farmers,0.5625
+financial support for farmers,7,565,Chief Minister’s Krishi Samuh Yojana,0.5579
+financial support for farmers,8,938,Feed And Fodder Entrepreneurship Scheme,0.5573
+financial support for farmers,9,1480,Integrated Fisheries Scheme,0.5547
+financial support for farmers,10,1208,Goat Unit Scheme On Grants And Bank Loans,0.5543
+schemes for women,1,3368,Women Self Employment Scheme,0.5075
+schemes for women,2,2027,Mukhyamantri Mahila Utkarsh Yojana,0.504
+schemes for women,3,1419,"Incentives to Women Entrepreneurs Scheme, 2008",0.484
+schemes for women,4,2078,Mukhyamantri Work Form Home-Job Work Yojana,0.4784
+schemes for women,5,528,Chief Minister Kanya Utthan Yojana,0.4747
+schemes for women,6,1369,IMA Nongthangleima Yaipha Tengbang Scheme,0.4718
+schemes for women,7,1951,Mukhya Mantri Mahila Kisan Sashaktikaran Yojana,0.4701
+schemes for women,8,1644,Kanyashree Prakalpa,0.4701
+schemes for women,9,1953,Mukhya Mantri Mahila Sashaktikaran Yojana,0.4683
+schemes for women,10,8,Indira Mahila Shakti Udyam Protsahan Yojana,0.4635
+benefits for senior citizens,1,1228,Grant In Aid To Old Age Home,0.5324
+benefits for senior citizens,2,2255,Old-Age Pension Scheme,0.5167
+benefits for senior citizens,3,2243,Old Age Assistance,0.5098
+benefits for senior citizens,4,2247,Old Age Pension - Chandigarh,0.5069
+benefits for senior citizens,5,2337,Pension Scheme to Old Age Persons (Senior Citizen),0.5047
+benefits for senior citizens,6,2248,Old Age Pension Scheme,0.5019
+benefits for senior citizens,7,2117,National Award For Senior Citizens (Vayoshreshtha Samman): Best Private Sector Organisation In Promoting The Wellbeing And Welfare Of Senior Citizens,0.4954
+benefits for senior citizens,8,2121,National Award For Senior Citizens (Vayoshreshtha Samman): Lifetime Achievement,0.4921
+benefits for senior citizens,9,2119,"National Award For Senior Citizens (Vayoshreshtha Samman): Best State In Implementing The Maintenance And Welfare Of Parents And Senior Citizens Act, 2007, And Providing Services And Facilities To Senior Citizens",0.4862
+benefits for senior citizens,10,3176,The Andaman & Nicobar Islands Old Age Assistance Scheme,0.4814
+financial assistance for small businesses,1,891,Entrepreneur Support Scheme,0.5334
+financial assistance for small businesses,2,90,"'Grant-in-Aid to Industrial Association, CII, Industrial NGOs for Promotion of SME Clusters' under 'Marketing And Publicity'",0.529
+financial assistance for small businesses,3,718,Direct Loans For Business Enterprise,0.5012
+financial assistance for small businesses,4,2740,"Scheme for Assistance to Micro, Small and Medium Enterprises (MSME): Assistance in Rent to MSEs",0.5002
+financial assistance for small businesses,5,382,Bank Loan Processing Fee Reimbursement Scheme,0.4934
+financial assistance for small businesses,6,2732,"Scheme for Assistance to Micro, Small and Medium Enterprises (MSME): Assistance for Interest Subsidy (Manufacturing Sector)",0.4906
+financial assistance for small businesses,7,3005,Spurring Entrepreneurship Initiative,0.4817
+financial assistance for small businesses,8,966,Financial Assistance To Disabled For Self Employment,0.479
+financial assistance for small businesses,9,2733,"Scheme for Assistance to Micro, Small and Medium Enterprises (MSME): Assistance for Interest Subsidy (Service Sector)",0.4756
+financial assistance for small businesses,10,2463,Prerana (micro Credit Finance) Scheme,0.4707
+worker life future security scheme,1,2325,Pension Scheme (BBOCWWB),0.5257
+worker life future security scheme,2,887,Employees' Pension Scheme,0.5151
+worker life future security scheme,3,1958,Mukhya Mantri Shahri Ajeevika Guarantee Yojna,0.5107
+worker life future security scheme,4,630,Contributory Social Security Scheme,0.51
+worker life future security scheme,5,2318,Pension Benefit,0.5078
+worker life future security scheme,6,2328,Pension Scheme (K.B.O.C.W.W.B),0.5004
+worker life future security scheme,7,3354,Widow Pension (CBOCWWB),0.4998
+worker life future security scheme,8,174,Accidental Benefit,0.4979
+worker life future security scheme,9,2177,National Pension Scheme For Traders And Self Employed Persons,0.4959
+worker life future security scheme,10,3350,West Bengal Transport Workers’ Social Security Scheme: Pension,0.4955

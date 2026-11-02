@@ -1,8 +1,12 @@
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from app import create_app
 
-from backend.database.connection import get_connection, create_tables
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True)
+from backend.database.db import get_connection, create_tables
 
 app = Flask(__name__)
 
@@ -70,3 +74,4 @@ def get_schemes():
 
 if __name__ == "__main__":
     app.run(debug=True)
+

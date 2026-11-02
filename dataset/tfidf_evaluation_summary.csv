@@ -1,0 +1,7 @@
+query,precision@5,recall@5,average_precision,reciprocal_rank
+benefits for senior citizens,0.8,0.1111,0.172,1.0
+financial assistance for small businesses,1.0,0.0427,0.0644,1.0
+financial support for farmers,0.2,0.0088,0.0022,0.25
+scholarships for higher education,0.8,0.0175,0.0273,1.0
+worker life future security scheme,1.0,0.0292,0.0585,1.0
+OVERALL,0.76,0.0419,0.0649,0.85
