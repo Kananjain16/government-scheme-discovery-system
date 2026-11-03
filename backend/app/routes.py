@@ -10,6 +10,8 @@ from app.discovery import discover_schemes
 
 from eligibility.eligibility_rules import match_scheme_eligibility
 from eligibility.eligibility_service import get_scheme_conditions
+from flask import request, jsonify
+from app.rag.rag_pipeline import answer_question
 
 logger = logging.getLogger(__name__)
 
@@ -351,4 +353,87 @@ def discover():
         return jsonify({
             "success": False,
             "message": "An internal error occurred during scheme discovery."
+        }), 500
+
+
+@search_bp.route("/api/rag/ask", methods=["POST"])
+def ask_rag():
+
+    try:
+        # 1. Get JSON request body
+        data = request.get_json(silent=True)
+
+        if not isinstance(data, dict):
+            return jsonify({
+                "success": False,
+                "error": "Request body must be valid JSON."
+            }), 400
+
+        # 2. Extract request parameters
+        question = data.get("question")
+        scheme_id = data.get("scheme_id")
+        top_k = data.get("top_k", 5)
+
+        # 3. Validate question
+        if not isinstance(question, str) or not question.strip():
+            return jsonify({
+                "success": False,
+                "error": "A non-empty question is required."
+            }), 400
+
+        question = question.strip()
+
+        # 4. Validate scheme_id
+        if scheme_id is not None:
+
+            if (
+                isinstance(scheme_id, bool)
+                or not isinstance(scheme_id, int)
+                or scheme_id <= 0
+            ):
+                return jsonify({
+                    "success": False,
+                    "error": "scheme_id must be a positive integer."
+                }), 400
+
+        # 5. Validate top_k
+        if (
+            isinstance(top_k, bool)
+            or not isinstance(top_k, int)
+            or top_k < 1
+            or top_k > 20
+        ):
+            return jsonify({
+                "success": False,
+                "error": "top_k must be an integer between 1 and 20."
+            }), 400
+
+        # 6. Call existing RAG pipeline
+        result = answer_question(
+            question=question,
+            scheme_id=scheme_id,
+            top_k=top_k
+        )
+
+        # 7. Extract generated answer and sources
+        answer = result.get("answer", "")
+        sources = result.get("sources", [])
+
+        # 8. Return response
+        return jsonify({
+            "success": True,
+            "question": question,
+            "answer": answer,
+            "sources": sources,
+            "context_found": len(sources) > 0
+        }), 200
+
+    except Exception as e:
+
+        logging.exception("RAG API failed")
+
+        return jsonify({
+            "success": False,
+            "error": "An error occurred while processing the RAG request.",
+            "details": str(e)
         }), 500

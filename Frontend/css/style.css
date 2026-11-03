@@ -1,0 +1,675 @@
+
+/* Global Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f7f8fc;
+    color: #202b3c;
+    line-height: 1.6;
+}
+
+.container {
+    width: 90%;
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+
+/* Header */
+
+.header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.header-content {
+    min-height: 72px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 23px;
+    font-weight: 700;
+    color: #172b4d;
+    text-decoration: none;
+}
+
+.logo span {
+    color: #2563eb;
+}
+
+nav {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+
+nav a {
+    text-decoration: none;
+    color: #46546a;
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #2563eb;
+}
+
+
+/* Hero Section */
+
+.hero {
+    background: #172b4d;
+    color: #ffffff;
+    padding: 85px 0;
+}
+
+.hero-content {
+    max-width: 850px;
+}
+
+.eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #2563eb;
+    margin-bottom: 12px;
+}
+
+.hero .eyebrow {
+    color: #a9c6ff;
+}
+
+.hero h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.2;
+    max-width: 780px;
+    margin-bottom: 20px;
+}
+
+.hero-description {
+    color: #d9e2f1;
+    max-width: 650px;
+    margin-bottom: 28px;
+}
+
+.primary-button {
+    display: inline-block;
+    background: #ffffff;
+    color: #172b4d;
+    padding: 12px 22px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+
+/* Search Section */
+
+.search-section {
+    padding-top: 65px;
+    padding-bottom: 70px;
+}
+
+.section-heading {
+    margin-bottom: 25px;
+}
+
+.section-heading h2 {
+    font-size: 30px;
+    margin-bottom: 6px;
+}
+
+.section-heading > p:last-child {
+    color: #64748b;
+}
+
+.search-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+}
+
+.search-panel label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 12px;
+}
+
+.search-input-group input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.search-input-group input:focus,
+.option-group select:focus {
+    outline: 2px solid #93c5fd;
+    outline-offset: 1px;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+}
+
+.search-input-group button {
+    background: #2563eb;
+    color: #ffffff;
+    padding: 13px 22px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.search-input-group button:hover {
+    background: #1d4ed8;
+}
+
+.search-input-group button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.search-options {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.option-group select {
+    min-width: 170px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+
+/* Status Messages */
+
+.status-message {
+    margin: 20px 0;
+    color: #64748b;
+    font-size: 14px;
+    min-height: 22px;
+}
+
+.status-message.error {
+    color: #b91c1c;
+}
+
+
+/* Search Results */
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0 18px;
+}
+
+.results-header h2 {
+    font-size: 23px;
+}
+
+.results-header span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.results-container {
+    display: grid;
+    gap: 16px;
+}
+
+.result-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 22px;
+}
+
+.result-card h3 {
+    color: #172b4d;
+    font-size: 19px;
+    margin-bottom: 10px;
+}
+
+.result-card p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.result-card button {
+    margin-top: 16px;
+    padding: 9px 16px;
+    border-radius: 5px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.result-card button:hover {
+    background: #dbeafe;
+}
+
+.empty-state {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-state p {
+    color: #64748b;
+    margin-top: 8px;
+}
+
+
+/* Profile and Eligibility Form */
+
+.profile-section {
+    padding: 65px 0;
+    background: #edf2f9;
+}
+
+.profile-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #334155;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #202b3c;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-note {
+    margin-top: 22px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.form-actions button {
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+#profileSubmit {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+#profileSubmit:hover {
+    background: #1d4ed8;
+}
+
+.reset-button {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+#profileStatus.success {
+    color: #15803d;
+}
+
+#profileStatus.error {
+    color: #b91c1c;
+}
+
+
+/* Discovery Results */
+
+.discovery-results-section {
+    padding: 65px 0;
+    background: #f7f8fc;
+}
+
+.results-summary {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 30px;
+    color: #475569;
+}
+
+.eligibility-groups {
+    display: grid;
+    gap: 30px;
+}
+
+.eligibility-group {
+    background: #ffffff;
+    padding: 22px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.group-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 18px;
+}
+
+.group-heading h3 {
+    font-size: 18px;
+    color: #172b4d;
+}
+
+.group-heading span {
+    background: #f1f5f9;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.scheme-list {
+    display: grid;
+    gap: 15px;
+}
+
+.scheme-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.scheme-card h4 {
+    font-size: 17px;
+    color: #172b4d;
+    margin-bottom: 10px;
+}
+
+.scheme-description {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.scheme-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0;
+    font-size: 12px;
+    color: #475569;
+}
+
+.status-label {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.status-potentially_eligible {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-needs_verification {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-not_eligible {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.eligibility-reason {
+    color: #475569;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.condition-list {
+    padding-left: 20px;
+    margin-top: 8px;
+    color: #475569;
+    font-size: 13px;
+}
+
+.scheme-card button {
+    margin-top: 15px;
+    padding: 9px 15px;
+    border-radius: 5px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.scheme-card button:hover {
+    background: #dbeafe;
+}
+
+.no-results {
+    padding: 18px;
+    color: #64748b;
+    font-size: 14px;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+
+/* Scheme Detail Dialog */
+
+.scheme-dialog {
+    width: min(650px, 92%);
+    max-height: 85vh;
+    margin: auto;
+    padding: 25px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 15px 50px rgba(15, 23, 42, 0.2);
+    overflow-y: auto;
+}
+
+.scheme-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dialog-header h2 {
+    font-size: 21px;
+}
+
+.close-button {
+    background: transparent;
+    font-size: 28px;
+    color: #64748b;
+}
+
+.detail-section {
+    margin-bottom: 18px;
+}
+
+.detail-section h3 {
+    font-size: 15px;
+    margin-bottom: 7px;
+}
+
+.detail-section p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+
+/* About and Footer */
+
+.about-section {
+    padding: 55px 0;
+    background: #edf2f9;
+}
+
+.about-section h2 {
+    margin-bottom: 12px;
+}
+
+.about-section p {
+    max-width: 750px;
+    color: #526176;
+}
+
+.footer {
+    background: #172b4d;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    font-size: 13px;
+}
+
+
+/* Responsive Design */
+
+@media (max-width: 650px) {
+
+    .header-content {
+        flex-direction: column;
+        padding: 15px 0;
+        gap: 12px;
+    }
+
+    nav {
+        gap: 14px;
+        justify-content: center;
+    }
+
+    .hero {
+        padding: 60px 0;
+    }
+
+    .search-input-group {
+        flex-direction: column;
+    }
+
+    .search-options {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .option-group select {
+        width: 100%;
+    }
+
+    .results-header {
+        align-items: flex-start;
+        gap: 8px;
+        flex-direction: column;
+    }
+
+    .profile-panel {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .eligibility-group {
+        padding: 15px;
+    }
+
+    .scheme-card {
+        padding: 15px;
+    }
+
+    .scheme-dialog {
+        padding: 18px;
+    }
+}

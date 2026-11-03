@@ -1,0 +1,11 @@
+test_id,question,expected_section,scheme_id
+1,What documents are required for this scheme?,documents,6
+2,What benefits does this scheme provide?,benefits,6
+3,What are the eligibility requirements?,eligibility,6
+4,How can someone apply for this scheme?,application,6
+5,What financial assistance is provided?,benefits,11
+6,What documents must farmers submit?,documents,
+7,Who can apply for this scheme?,eligibility,
+8,What is the application process?,application,
+9,What is the deadline for applying?,application,
+10,What is the mobile number of the officer responsible for approving applications?,unknown,

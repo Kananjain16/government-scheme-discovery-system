@@ -1,12 +1,14 @@
 
 import os
 import time
+import logging
 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
 
+# Load environment variables
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -23,13 +25,19 @@ if not API_KEY:
     )
 
 
+# Initialize Gemini client
 client = genai.Client(api_key=API_KEY)
+
+logger = logging.getLogger(__name__)
 
 
 def generate_answer(prompt, max_retries=3):
 
-    if not prompt or not prompt.strip():
+    if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt cannot be empty.")
+
+    if not isinstance(max_retries, int) or max_retries < 1:
+        raise ValueError("max_retries must be at least 1.")
 
     for attempt in range(max_retries):
 
@@ -51,6 +59,8 @@ def generate_answer(prompt, max_retries=3):
                     "Gemini returned an empty response."
                 )
 
+            logger.info("Gemini response generated successfully.")
+
             return answer.strip()
 
         except Exception as error:
@@ -63,16 +73,25 @@ def generate_answer(prompt, max_retries=3):
             )
 
             if not retryable:
+                logger.exception("Gemini API request failed.")
                 raise
 
             if attempt == max_retries - 1:
+                logger.error(
+                    "Gemini failed after %s attempts: %s",
+                    max_retries,
+                    error_message
+                )
                 raise
 
             wait_time = 2 ** (attempt + 1)
 
-            print(
-                f"Gemini temporarily unavailable. "
-                f"Retrying in {wait_time} seconds..."
+            logger.warning(
+                "Gemini temporarily unavailable. "
+                "Attempt %s/%s. Retrying in %s seconds.",
+                attempt + 1,
+                max_retries,
+                wait_time
             )
 
             time.sleep(wait_time)

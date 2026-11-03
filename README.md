@@ -7,3 +7,7 @@ TO START THE ENV
 
 TO START THE BACKEND
 python -m backend.run
+
+TO START THE FRONTEND
+cd frontend
+python -m http.server 5500     
