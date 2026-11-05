@@ -1,45 +1,28 @@
-if (typeof API_BASE_URL === "undefined") {
-    throw new Error(
-        "API_BASE_URL is not defined. Load js/config.js before js/app.js."
-    );
-}
 
-async function apiRequest(endpoint, payload) {
-    let response;
+/* =====================================
+   COMMON API FUNCTION
+===================================== */
 
-    try {
-        response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
-    } catch (error) {
-        throw new Error(
-            "Cannot connect to the Flask backend. Make sure Flask is running on http://127.0.0.1:5000."
-        );
-    }
+async function apiRequest(endpoint, body) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
 
     let data;
 
     try {
         data = await response.json();
     } catch {
-        throw new Error(
-            `The server returned an invalid response. HTTP ${response.status}.`
-        );
+        throw new Error("Backend returned an invalid response.");
     }
 
-    if (!response.ok) {
-        const message =
-            data?.error ||
-            data?.message ||
-            data?.details ||
-            `Request failed. HTTP ${response.status}.`;
-
+    if (!response.ok || data.success === false) {
         throw new Error(
-            typeof message === "string" ? message : JSON.stringify(message)
+            data.message || data.error || "Something went wrong."
         );
     }
 
@@ -47,802 +30,838 @@ async function apiRequest(endpoint, payload) {
 }
 
 
-/* -----------------------------
-   2. SEARCH INTERFACE
------------------------------ */
+/* =====================================
+   COMMON UI FUNCTIONS
+===================================== */
 
-const searchInput = document.getElementById("searchQuery");
-const searchButton = document.getElementById("searchButton");
-const searchMethod = document.getElementById("searchMethod");
-const resultLimit = document.getElementById("resultLimit");
+function setStatus(id, message, type = "") {
+    const element = document.getElementById(id);
 
-const resultsContainer = document.getElementById("resultsContainer");
-const statusMessage = document.getElementById("statusMessage");
-const resultCount = document.getElementById("resultCount");
-
-function showStatus(message, isError = false) {
-    if (!statusMessage) return;
-
-    statusMessage.textContent = message;
-    statusMessage.classList.toggle("error", isError);
-}
-
-function setSearchLoading(isLoading) {
-    if (!searchButton) return;
-
-    searchButton.disabled = isLoading;
-    searchButton.textContent = isLoading ? "Searching..." : "Search Schemes";
-}
-
-function showSearchError(message) {
-    if (!resultsContainer) return;
-
-    resultsContainer.replaceChildren();
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "empty-state";
-
-    const heading = document.createElement("h3");
-    heading.textContent = "Unable to load schemes";
-
-    const paragraph = document.createElement("p");
-    paragraph.textContent = message;
-
-    wrapper.append(heading, paragraph);
-    resultsContainer.appendChild(wrapper);
-
-    if (resultCount) resultCount.textContent = "";
-}
-
-
-/* -----------------------------
-   3. USER PROFILE FORM
------------------------------ */
-
-const profileForm = document.getElementById("profileForm");
-const profileStatus = document.getElementById("profileStatus");
-
-let userProfile = null;
-
-function showProfileStatus(message, type) {
-    if (!profileStatus) return;
-
-    profileStatus.textContent = message;
-    profileStatus.classList.remove("success", "error");
-
-    if (type) {
-        profileStatus.classList.add(type);
+    if (!element) {
+        console.error(`Element not found: ${id}`);
+        return;
     }
+
+    element.textContent = message;
+    element.className = `status ${type}`;
 }
 
-function collectProfile() {
-    const ageElement = document.getElementById("age");
-    const incomeElement = document.getElementById("annual_income");
-    const stateElement = document.getElementById("state");
-    const occupationElement = document.getElementById("occupation");
-    const genderElement = document.getElementById("gender");
-    const categoryElement = document.getElementById("category");
 
-    const ageValue = ageElement?.value.trim() ?? "";
-    const incomeValue = incomeElement?.value.trim() ?? "";
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
 
+
+/* =====================================
+   PROFILE MANAGEMENT
+===================================== */
+
+// Collect all eight frontend profile fields.
+
+function getProfile() {
     return {
-        age: ageValue === "" ? null : Number(ageValue),
-        annual_income: incomeValue === "" ? null : Number(incomeValue),
-        state: stateElement?.value.trim() ?? "",
-        occupation: occupationElement?.value.trim() ?? "",
-        gender: genderElement?.value ?? "",
-        category: categoryElement?.value ?? ""
+        age: Number(document.getElementById("age").value),
+
+        gender: document.getElementById("gender").value,
+
+        state: document.getElementById("state").value.trim(),
+
+        occupation: document.getElementById("occupation").value,
+
+        annual_income: Number(
+            document.getElementById("income").value
+        ),
+
+        education: document.getElementById("education").value,
+
+        category: document.getElementById("category").value,
+
+        disability: document.getElementById("disability").value
     };
 }
 
-function validateProfile(profile) {
-    if (
-        profile.age !== null &&
-        (
-            !Number.isFinite(profile.age) ||
-            !Number.isInteger(profile.age) ||
-            profile.age < 0 ||
-            profile.age > 120
-        )
-    ) {
-        return "Age must be a whole number between 0 and 120.";
-    }
 
-    if (
-        profile.annual_income !== null &&
-        (
-            !Number.isFinite(profile.annual_income) ||
-            profile.annual_income < 0
-        )
-    ) {
-        return "Annual income must be a valid non-negative number.";
-    }
+// IMPORTANT:
+// The current backend supports only six profile fields.
+// Education and disability remain saved locally but
+// are not sent to the eligibility engine.
 
-    return null;
+function getSupportedProfile(profile) {
+    return {
+        age: profile.age,
+        gender: profile.gender,
+        state: profile.state,
+        occupation: profile.occupation,
+        annual_income: profile.annual_income,
+        category: profile.category
+    };
 }
 
-if (profileForm) {
-    profileForm.addEventListener("submit", (event) => {
+
+// Load saved profile from localStorage.
+
+function loadProfile() {
+    const saved = localStorage.getItem("schemeSathiProfile");
+
+    if (!saved) return;
+
+    try {
+        const profile = JSON.parse(saved);
+
+        const fields = {
+            age: profile.age,
+            gender: profile.gender,
+            state: profile.state,
+            occupation: profile.occupation,
+            income: profile.annual_income,
+            education: profile.education,
+            category: profile.category,
+            disability: profile.disability
+        };
+
+        Object.entries(fields).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+
+            if (
+                element &&
+                value !== undefined &&
+                value !== null
+            ) {
+                element.value = value;
+            }
+        });
+
+    } catch (error) {
+        console.error("Could not load saved profile:", error);
+    }
+}
+
+
+/* =====================================
+   SAVE PROFILE AND FIND SCHEMES
+===================================== */
+
+document.getElementById("profileForm").addEventListener(
+    "submit",
+    async function(event) {
+
         event.preventDefault();
 
-        const profile = collectProfile();
-        const error = validateProfile(profile);
+        const profile = getProfile();
 
-        if (error) {
-            userProfile = null;
-            showProfileStatus(error, "error");
+        // Validate age.
+
+        if (
+            !Number.isFinite(profile.age) ||
+            profile.age < 1 ||
+            profile.age > 120
+        ) {
+            setStatus(
+                "profileStatus",
+                "Please enter a valid age.",
+                "error"
+            );
+
             return;
         }
 
-        userProfile = profile;
+        // Validate annual income.
 
-        showProfileStatus(
-            "Profile collected successfully. It will be sent with your next scheme discovery request.",
+        if (
+            !Number.isFinite(profile.annual_income) ||
+            profile.annual_income < 0
+        ) {
+            setStatus(
+                "profileStatus",
+                "Please enter a valid annual family income.",
+                "error"
+            );
+
+            return;
+        }
+
+        // Save complete profile locally.
+
+        localStorage.setItem(
+            "schemeSathiProfile",
+            JSON.stringify(profile)
+        );
+
+        setStatus(
+            "profileStatus",
+            "Profile saved. Finding relevant schemes...",
             "success"
         );
-    });
 
-    profileForm.addEventListener("reset", () => {
-        userProfile = null;
-        showProfileStatus("Profile cleared.", "success");
-    });
-}
+        // Automatically find schemes.
 
-
-/* -----------------------------
-   4. DISCOVERY RESULT ELEMENTS
------------------------------ */
-
-const eligibleResults = document.getElementById("eligibleResults");
-const verificationResults = document.getElementById("verificationResults");
-const notEligibleResults = document.getElementById("notEligibleResults");
-
-const eligibleCount = document.getElementById("eligibleCount");
-const verificationCount = document.getElementById("verificationCount");
-const notEligibleCount = document.getElementById("notEligibleCount");
-
-const resultsSummary = document.getElementById("resultsSummary");
-
-const schemeDetailsDialog = document.getElementById("schemeDetailsDialog");
-const detailSchemeName = document.getElementById("detailSchemeName");
-const schemeDetailsContent = document.getElementById("schemeDetailsContent");
-const closeDetailsButton = document.getElementById("closeDetailsButton");
-
-let currentSchemes = [];
-
-function createTextElement(tag, className, text) {
-    const element = document.createElement(tag);
-
-    if (className) {
-        element.className = className;
+        await getRecommendations(profile);
     }
+);
 
-    element.textContent =
-        text === undefined || text === null || text === ""
-            ? "Not available."
-            : String(text);
 
-    return element;
-}
+/* =====================================
+   SEMANTIC SCHEME DISCOVERY
+===================================== */
 
-function getUnknownConditionText(condition) {
-    if (typeof condition === "string") {
-        return condition;
-    }
+async function discoverSchemes() {
 
-    if (condition && typeof condition === "object") {
-        return [
-            condition.field_name,
-            condition.reason,
-            condition.value
-        ].filter(Boolean).join(": ");
-    }
+    const query = document.getElementById("searchQuery")
+        .value.trim();
 
-    return "Additional information is required.";
-}
-
-function getSchemeDescription(scheme) {
-    // The actual /api/discover response does not currently return
-    // a "description" property. Use eligibility_description as
-    // the explanatory text instead.
-    return (
-        scheme.description ||
-        scheme.eligibility_description ||
-        "Description not available."
-    );
-}
-
-function renderSchemeCard(scheme) {
-    const card = document.createElement("article");
-    card.className = "scheme-card";
-
-    const heading = createTextElement(
-        "h4",
-        "",
-        scheme.scheme_name || `Scheme ${scheme.scheme_id ?? ""}`
+    const topK = Number(
+        document.getElementById("topK").value
     );
 
-    const description = createTextElement(
-        "p",
-        "scheme-description",
-        getSchemeDescription(scheme)
-    );
+    const button = document.getElementById("searchBtn");
 
-    const status = scheme.eligibility?.status || "needs_verification";
-
-    const allowedStatuses = [
-        "potentially_eligible",
-        "needs_verification",
-        "not_eligible"
-    ];
-
-    const safeStatus = allowedStatuses.includes(status)
-        ? status
-        : "needs_verification";
-
-    const statusLabel = createTextElement(
-        "span",
-        `status-label status-${safeStatus}`,
-        safeStatus.replaceAll("_", " ").toUpperCase()
-    );
-
-    const meta = document.createElement("div");
-    meta.className = "scheme-meta";
-
-    meta.appendChild(
-        createTextElement(
-            "span",
-            "",
-            `Scheme ID: ${scheme.scheme_id ?? "N/A"}`
-        )
-    );
-
-    meta.appendChild(
-        createTextElement(
-            "span",
-            "",
-            `Level: ${scheme.level || "N/A"}`
-        )
-    );
-
-    const retrievalScore =
-        scheme.retrieval_score ?? scheme.score;
-
-    if (
-        retrievalScore !== undefined &&
-        retrievalScore !== null &&
-        Number.isFinite(Number(retrievalScore))
-    ) {
-        meta.appendChild(
-            createTextElement(
-                "span",
-                "",
-                `Retrieval score: ${Number(retrievalScore).toFixed(4)}`
-            )
-        );
-    }
-
-    if (scheme.rank !== undefined && scheme.rank !== null) {
-        meta.appendChild(
-            createTextElement("span", "", `Rank: ${scheme.rank}`)
-        );
-    }
-
-    const benefits = createTextElement(
-        "p",
-        "scheme-benefits",
-        scheme.benefits || "Benefits information not available."
-    );
-
-    const reason = createTextElement(
-        "p",
-        "eligibility-reason",
-        scheme.eligibility?.reason ||
-            "No eligibility explanation available."
-    );
-
-    const unknownConditions =
-        scheme.eligibility?.unknown_conditions || [];
-
-    card.append(
-        heading,
-        description,
-        statusLabel,
-        meta,
-        benefits,
-        reason
-    );
-
-    if (Array.isArray(unknownConditions) && unknownConditions.length > 0) {
-        const list = document.createElement("ul");
-        list.className = "condition-list";
-
-        unknownConditions.forEach((condition) => {
-            const item = document.createElement("li");
-            item.textContent = getUnknownConditionText(condition);
-            list.appendChild(item);
-        });
-
-        card.appendChild(list);
-    }
-
-    const detailsButton = document.createElement("button");
-    detailsButton.type = "button";
-    detailsButton.textContent = "View Details";
-    detailsButton.addEventListener("click", () => {
-        showSchemeDetails(scheme);
-    });
-
-    card.appendChild(detailsButton);
-
-    return card;
-}
-
-function renderGroup(container, schemes) {
-    if (!container) return;
-
-    container.replaceChildren();
-
-    if (!Array.isArray(schemes) || schemes.length === 0) {
-        const empty = createTextElement(
-            "div",
-            "no-results",
-            "No schemes in this category."
-        );
-
-        container.appendChild(empty);
-        return;
-    }
-
-    schemes.forEach((scheme) => {
-        container.appendChild(renderSchemeCard(scheme));
-    });
-}
-
-function addDetailSection(title, value) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "detail-section";
-
-    const heading = createTextElement("h3", "", title);
-    const paragraph = createTextElement("p", "", value);
-
-    wrapper.append(heading, paragraph);
-    schemeDetailsContent.appendChild(wrapper);
-}
-
-function showSchemeDetails(scheme) {
-    if (!schemeDetailsDialog || !schemeDetailsContent || !detailSchemeName) {
-        return;
-    }
-
-    detailSchemeName.textContent =
-        scheme.scheme_name || `Scheme ${scheme.scheme_id ?? ""}`;
-
-    schemeDetailsContent.replaceChildren();
-
-    addDetailSection("Scheme ID", scheme.scheme_id);
-    addDetailSection("Scheme level", scheme.level);
-    addDetailSection("Rank", scheme.rank);
-    addDetailSection(
-        "Retrieval score",
-        scheme.retrieval_score ?? scheme.score
-    );
-    addDetailSection("Benefits", scheme.benefits);
-    addDetailSection(
-        "Eligibility description",
-        scheme.eligibility_description
-    );
-    addDetailSection(
-        "Eligibility status",
-        scheme.eligibility?.status
-    );
-    addDetailSection(
-        "Eligibility reason",
-        scheme.eligibility?.reason
-    );
-
-    const unknownConditions =
-        scheme.eligibility?.unknown_conditions || [];
-
-    const unknownText = Array.isArray(unknownConditions)
-        ? unknownConditions.map(getUnknownConditionText).join("\n")
-        : "Not available.";
-
-    addDetailSection(
-        "Conditions needing verification",
-        unknownText
-    );
-
-    if (typeof schemeDetailsDialog.showModal === "function") {
-        schemeDetailsDialog.showModal();
-    } else {
-        schemeDetailsDialog.setAttribute("open", "");
-    }
-}
+    const resultsContainer =
+        document.getElementById("searchResults");
 
 
-/* -----------------------------
-   5. RENDER ACTUAL API RESPONSE
------------------------------ */
-
-function renderDiscoveryResults(apiResponse) {
-    /*
-      Actual response shape confirmed in Postman:
-
-      {
-        "success": true,
-        "data": {
-          "results": {
-            "potentially_eligible": [],
-            "needs_verification": [],
-            "not_eligible": []
-          },
-          "summary": {},
-          "total_retrieved": 10,
-          "retrieval_method": "semantic"
-        },
-        "message": "..."
-      }
-    */
-
-    if (!apiResponse || apiResponse.success !== true) {
-        throw new Error(
-            apiResponse?.message || "Discovery API did not return success."
-        );
-    }
-
-    const groups = apiResponse.data?.results;
-
-    if (!groups || typeof groups !== "object") {
-        throw new Error(
-            "Unexpected discovery response: data.results was not found. Check the browser console."
-        );
-    }
-
-    const eligible = groups.potentially_eligible;
-    const verification = groups.needs_verification;
-    const notEligible = groups.not_eligible;
-
-    if (
-        !Array.isArray(eligible) ||
-        !Array.isArray(verification) ||
-        !Array.isArray(notEligible)
-    ) {
-        throw new Error(
-            "Unexpected discovery response: one or more eligibility groups are not arrays."
-        );
-    }
-
-    currentSchemes = [
-        ...eligible,
-        ...verification,
-        ...notEligible
-    ];
-
-    if (eligibleCount) eligibleCount.textContent = eligible.length;
-    if (verificationCount) verificationCount.textContent = verification.length;
-    if (notEligibleCount) notEligibleCount.textContent = notEligible.length;
-
-    if (resultsSummary) {
-        const total = apiResponse.data.total_retrieved ?? currentSchemes.length;
-        const method = apiResponse.data.retrieval_method || "unknown";
-
-        resultsSummary.textContent =
-            `Found ${total} schemes using ${method.toUpperCase()} search. ` +
-            `Potentially eligible: ${eligible.length}, ` +
-            `Needs verification: ${verification.length}, ` +
-            `Not eligible: ${notEligible.length}.`;
-    }
-
-    renderGroup(eligibleResults, eligible);
-    renderGroup(verificationResults, verification);
-    renderGroup(notEligibleResults, notEligible);
-
-    const discoverySection = document.getElementById("discoveryResults");
-
-    if (discoverySection) {
-        discoverySection.scrollIntoView({ behavior: "smooth" });
-    }
-}
-
-
-/* -----------------------------
-   6. CALL POST /api/discover
------------------------------ */
-
-async function handleSearch() {
-    if (!searchInput || !searchMethod || !resultLimit) {
-        showStatus("Search form elements are missing from index.html.", true);
-        return;
-    }
-
-    const query = searchInput.value.trim();
+    // Validate query.
 
     if (!query) {
-        showStatus("Please enter a search query.", true);
-        searchInput.focus();
+
+        setStatus(
+            "searchStatus",
+            "Please enter your search query.",
+            "error"
+        );
+
         return;
     }
 
-    const method = searchMethod.value;
-    const topK = Number(resultLimit.value);
+    if (!Number.isInteger(topK) || topK < 1 || topK > 50) {
 
-    if (!Number.isInteger(topK) || topK < 1) {
-        showStatus("Please select a valid result limit.", true);
+        setStatus(
+            "searchStatus",
+            "Please select a valid number of results.",
+            "error"
+        );
+
         return;
     }
 
-    /*
-      If the profile form has been submitted, send its values.
-      Otherwise send an empty object, as in the Day 22 instructions.
-    */
-    const profile = userProfile || {};
 
-    const payload = {
-        query: query,
-        method: method,
-        top_k: topK,
-        profile: profile
-    };
+    button.disabled = true;
 
-    setSearchLoading(true);
-    showStatus("Searching government schemes...");
+    resultsContainer.innerHTML = "";
 
-    if (resultsContainer) resultsContainer.replaceChildren();
-    if (resultCount) resultCount.textContent = "";
-    if (resultsSummary) resultsSummary.textContent = "";
+    setStatus(
+        "searchStatus",
+        "Searching for relevant schemes..."
+    );
+
 
     try {
-        const data = await apiRequest("/api/discover", payload);
 
-        console.log("Actual discovery API response:", data);
+        // Load complete saved profile.
 
-        renderDiscoveryResults(data);
-
-        if (resultCount) {
-            resultCount.textContent =
-                `${currentSchemes.length} results`;
-        }
-
-        showStatus(
-            data.message || "Discovery request completed successfully."
+        const savedProfile = localStorage.getItem(
+            "schemeSathiProfile"
         );
+
+        const fullProfile = savedProfile
+            ? JSON.parse(savedProfile)
+            : {};
+
+
+        // Send only supported fields to backend.
+
+        const profile = getSupportedProfile(fullProfile);
+
+
+        const response = await apiRequest(
+            "/api/discover",
+            {
+                query: query,
+
+                method: "semantic",
+
+                top_k: topK,
+
+                profile: profile
+            }
+        );
+
+
+        const results = response.data?.results || {};
+
+
+        renderGroupedResults(
+            results,
+            "searchResults"
+        );
+
+
+        setStatus(
+            "searchStatus",
+            "Scheme discovery completed.",
+            "success"
+        );
+
+
     } catch (error) {
-        console.error("Discovery API error:", error);
 
-        showStatus(
-            error.message || "Unable to retrieve schemes.",
-            true
+        console.error("Semantic search error:", error);
+
+        setStatus(
+            "searchStatus",
+            error.message,
+            "error"
         );
 
-        showSearchError(
-            error.message || "Please check your backend and try again."
-        );
     } finally {
-        setSearchLoading(false);
+
+        button.disabled = false;
+
     }
 }
 
-if (searchButton) {
-    searchButton.addEventListener("click", handleSearch);
-}
 
-if (searchInput) {
-    searchInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            handleSearch();
-        }
-    });
-}
+/* =====================================
+   PROFILE-BASED RECOMMENDATIONS
+===================================== */
 
+async function getRecommendations(profile) {
 
-/* -----------------------------
-   7. DETAILS DIALOG EVENTS
------------------------------ */
+    const container = document.getElementById(
+        "recommendationResults"
+    );
 
-if (closeDetailsButton && schemeDetailsDialog) {
-    closeDetailsButton.addEventListener("click", () => {
-        schemeDetailsDialog.close();
-    });
-}
-
-if (schemeDetailsDialog) {
-    schemeDetailsDialog.addEventListener("click", (event) => {
-        if (event.target === schemeDetailsDialog) {
-            schemeDetailsDialog.close();
-        }
-    });
-}
+    const button = document.getElementById(
+        "saveProfileBtn"
+    );
 
 
-/* -----------------------------
-   8. INITIAL STATE
------------------------------ */
+    button.disabled = true;
 
-// No sample schemes are rendered on page load.
-// Results appear only after a successful real API request.
-console.log("Government Scheme Discovery frontend initialized.");
+    container.innerHTML = "";
 
 
-/* =========================================================
-   PART 8: RAG QUESTION ANSWERING
-   Connects POST /api/rag/ask.
-   Expected response shape:
-   {
-       "answer": "...",
-       "sources": [
-           {
-               "chunk_id": 1,
-               "scheme_id": 6,
-               "scheme_name": "...",
-               "section_name": "...",
-               "similarity_score": 0.8
-           }
-       ]
-   }
-   Confirm this shape against your actual Postman response.
-========================================================= */
+    try {
 
-const ragQuestion = document.getElementById("ragQuestion");
-const ragSchemeId = document.getElementById("ragSchemeId");
-const ragTopK = document.getElementById("ragTopK");
-const askRagButton = document.getElementById("askRagButton");
-const ragStatus = document.getElementById("ragStatus");
-const ragAnswer = document.getElementById("ragAnswer");
-const ragSources = document.getElementById("ragSources");
+        // Filter unsupported profile fields.
 
-function showRagStatus(message, isError = false) {
-    if (!ragStatus) return;
+        const supportedProfile = getSupportedProfile(profile);
 
-    ragStatus.textContent = message;
-    ragStatus.classList.toggle("error", isError);
-}
 
-function displayRagAnswer(answer) {
-    if (!ragAnswer) return;
+        // Call semantic discovery API.
 
-    ragAnswer.replaceChildren();
+        const response = await apiRequest(
+            "/api/discover",
+            {
+                query:
+                    "Find government schemes relevant to my personal profile, occupation and eligibility.",
 
-    const heading = document.createElement("h3");
-    heading.textContent = "AI Generated Answer";
+                method: "semantic",
 
-    const answerText = document.createElement("p");
-    answerText.textContent = answer;
+                top_k: 10,
 
-    ragAnswer.append(heading, answerText);
-}
+                profile: supportedProfile
+            }
+        );
 
-function displayRagSources(sources) {
-    if (!ragSources) return;
 
-    ragSources.replaceChildren();
+        // Extract grouped results.
 
-    if (!Array.isArray(sources) || sources.length === 0) {
-        const note = document.createElement("p");
-        note.textContent = "No source metadata was returned by the API.";
-        ragSources.appendChild(note);
-        return;
-    }
+        const results = response.data?.results || {};
 
-    const heading = document.createElement("h3");
-    heading.textContent = "Sources Used";
-    ragSources.appendChild(heading);
 
-    sources.forEach((source, index) => {
-        const card = document.createElement("article");
-        card.className = "rag-source-card";
+        // Display recommendations.
 
-        const sourceHeading = document.createElement("h4");
-        sourceHeading.textContent = `Source ${index + 1}`;
-        card.appendChild(sourceHeading);
+        renderGroupedResults(
+            results,
+            "recommendationResults"
+        );
 
-        const fields = [
-            ["Scheme", source.scheme_name],
-            ["Scheme ID", source.scheme_id],
-            ["Section", source.section_name],
-            ["Chunk ID", source.chunk_id],
-            ["Similarity score", source.similarity_score]
-        ];
 
-        fields.forEach(([label, value]) => {
-            const paragraph = document.createElement("p");
-            paragraph.textContent =
-                `${label}: ${value === undefined || value === null || value === "" ? "Not provided" : value}`;
-            card.appendChild(paragraph);
+        setStatus(
+            "profileStatus",
+            "Profile saved and recommendations generated.",
+            "success"
+        );
+
+
+        // Scroll to recommendations.
+
+        document.getElementById(
+            "recommendations"
+        ).scrollIntoView({
+            behavior: "smooth"
         });
 
-        ragSources.appendChild(card);
-    });
+
+    } catch (error) {
+
+        console.error(
+            "Recommendation error:",
+            error
+        );
+
+        setStatus(
+            "profileStatus",
+            "Profile saved locally, but recommendations failed: " +
+                error.message,
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+
+    }
 }
 
-async function handleRagQuestion() {
-    if (!ragQuestion || !ragTopK || !askRagButton) {
-        showRagStatus("RAG form elements are missing from index.html.", true);
+
+/* =====================================
+   DISPLAY GROUPED SCHEME RESULTS
+===================================== */
+
+function renderGroupedResults(groups, containerId) {
+
+    const container = document.getElementById(containerId);
+
+
+    const groupConfig = [
+
+        {
+            key: "potentially_eligible",
+
+            title: "Potentially Eligible",
+
+            status: "Potentially eligible",
+
+            className: "eligible"
+        },
+
+        {
+            key: "needs_verification",
+
+            title: "Needs Verification",
+
+            status: "Eligibility needs verification",
+
+            className: "verification"
+        },
+
+        {
+            key: "not_eligible",
+
+            title: "Not Eligible",
+
+            status: "Not eligible",
+
+            className: "not-eligible"
+        }
+
+    ];
+
+
+    let html = "";
+
+    let total = 0;
+
+
+    groupConfig.forEach(group => {
+
+        const schemes = Array.isArray(groups[group.key])
+            ? groups[group.key]
+            : [];
+
+
+        if (!schemes.length) return;
+
+
+        total += schemes.length;
+
+
+        html += `
+            <h3>${group.title}</h3>
+        `;
+
+
+        schemes.forEach(scheme => {
+
+            html += createSchemeCard(
+                scheme,
+                group
+            );
+
+        });
+
+    });
+
+
+    if (total === 0) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                No schemes found.
+
+                Try another search query or update
+                your profile details.
+            </div>
+        `;
+
         return;
     }
 
-    const question = ragQuestion.value.trim();
-    const schemeIdValue = ragSchemeId?.value.trim() ?? "";
+
+    container.innerHTML = html;
+
+}
+
+
+/* =====================================
+   CREATE SCHEME CARD
+===================================== */
+
+function createSchemeCard(scheme, group) {
+
+    const name =
+        scheme.scheme_name ||
+        scheme.name ||
+        "Unnamed Scheme";
+
+    const level =
+        scheme.level ||
+        "Government Scheme";
+
+    const benefits =
+        scheme.benefits ||
+        "Information not available.";
+
+    const eligibility =
+        scheme.eligibility_description ||
+        scheme.eligibility ||
+        "Eligibility information not available.";
+
+    const schemeId = scheme.scheme_id;
+
+    return `
+        <article class="scheme-card">
+
+            <span class="scheme-level">
+                ${escapeHTML(level)}
+            </span>
+
+            <h3>${escapeHTML(name)}</h3>
+
+            <p>
+                <strong>Benefits:</strong>
+                ${escapeHTML(benefits)}
+            </p>
+
+            <p>
+                <strong>Eligibility:</strong>
+                ${escapeHTML(eligibility)}
+            </p>
+
+            <span class="eligibility-status ${group.className}">
+                ${group.status}
+            </span>
+
+            <p>
+                <button
+                    class="primary-btn"
+                    data-scheme-id="${escapeHTML(schemeId)}"
+                    data-scheme-name="${escapeHTML(name)}"
+                    onclick="askAboutScheme(
+                        this.dataset.schemeId,
+                        this.dataset.schemeName
+                    )">
+
+                    Ask AI About This Scheme
+
+                </button>
+            </p>
+
+        </article>
+    `;
+}
+
+
+/* =====================================
+   RAG QUESTION ANSWERING
+===================================== */
+
+// Select a scheme before asking AI questions.
+
+
+function askAboutScheme(schemeId, schemeName) {
+
+    // Store ID internally for the RAG backend.
+    document.getElementById("ragSchemeId").value =
+        schemeId ?? "";
+
+    // Display scheme name to the user.
+    document.getElementById("ragSchemeName").value =
+        schemeName || "";
+
+    // Scroll to AI section.
+    document.getElementById("ask-ai").scrollIntoView({
+        behavior: "smooth"
+    });
+
+    document.getElementById("ragQuestion").focus();
+}
+
+
+
+/* =====================================
+   ASK AI ABOUT GOVERNMENT SCHEMES
+===================================== */
+
+async function askAI() {
+
+    const question = document.getElementById(
+        "ragQuestion"
+    ).value.trim();
+
+
+    const schemeIdValue = document.getElementById(
+        "ragSchemeId"
+    ).value.trim();
+
+
+    const button = document.getElementById(
+        "askBtn"
+    );
+
+
+    const answerContainer = document.getElementById(
+        "ragAnswer"
+    );
+
+
+    // Validate question.
 
     if (!question) {
-        showRagStatus("Please enter a question.", true);
-        ragQuestion.focus();
+
+        setStatus(
+            "ragStatus",
+            "Please enter your question.",
+            "error"
+        );
+
         return;
     }
 
-    const topK = Number(ragTopK.value);
 
-    if (!Number.isInteger(topK) || topK < 1) {
-        showRagStatus("Please select a valid context chunk count.", true);
-        return;
-    }
+    // Prepare RAG request.
 
     const payload = {
+
         question: question,
-        top_k: topK
+
+        top_k: 5
+
     };
 
-    if (schemeIdValue !== "") {
+
+    // Add scheme ID if selected.
+
+    if (schemeIdValue) {
+
         const schemeId = Number(schemeIdValue);
 
-        if (!Number.isInteger(schemeId) || schemeId <= 0) {
-            showRagStatus("Enter a valid positive scheme ID.", true);
-            ragSchemeId?.focus();
+
+        if (
+            !Number.isInteger(schemeId) ||
+            schemeId <= 0
+        ) {
+
+            setStatus(
+                "ragStatus",
+                "Please enter a valid scheme ID.",
+                "error"
+            );
+
             return;
         }
 
+
         payload.scheme_id = schemeId;
+
     }
 
-    askRagButton.disabled = true;
-    askRagButton.textContent = "Generating answer...";
-    showRagStatus("Retrieving scheme information and generating an answer...");
 
-    if (ragAnswer) ragAnswer.replaceChildren();
-    if (ragSources) ragSources.replaceChildren();
+    button.disabled = true;
+
+    answerContainer.style.display = "none";
+
+    answerContainer.innerHTML = "";
+
+
+    setStatus(
+        "ragStatus",
+        "Retrieving scheme information and generating answer..."
+    );
+
 
     try {
-        const data = await apiRequest("/api/rag/ask", payload);
 
-        console.log("Actual RAG API response:", data);
+        // Call RAG API.
 
-        // The current code expects data.answer and data.sources.
-        // Change these paths if your actual Postman response is nested.
-        if (typeof data.answer !== "string" || !data.answer.trim()) {
-            throw new Error(
-                "The RAG response does not contain a non-empty data.answer field. Inspect the console response and adjust the response mapping."
-            );
-        }
-
-        displayRagAnswer(data.answer);
-
-        const sources = Array.isArray(data.sources) ? data.sources : [];
-        displayRagSources(sources);
-
-        showRagStatus("Answer generated successfully.");
-    } catch (error) {
-        console.error("RAG API error:", error);
-        showRagStatus(
-            error.message || "Unable to generate an answer.",
-            true
+        const response = await apiRequest(
+            "/api/rag/ask",
+            payload
         );
+
+
+        // Display generated answer and sources.
+
+        displayRAGAnswer(response);
+
+
+        setStatus(
+            "ragStatus",
+            "Answer generated successfully.",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error("RAG error:", error);
+
+
+        setStatus(
+            "ragStatus",
+            error.message,
+            "error"
+        );
+
     } finally {
-        askRagButton.disabled = false;
-        askRagButton.textContent = "Ask Question";
+
+        button.disabled = false;
+
     }
+
 }
 
-if (askRagButton) {
-    askRagButton.addEventListener("click", handleRagQuestion);
+
+/* =====================================
+   DISPLAY RAG ANSWER AND SOURCES
+===================================== */
+
+function displayRAGAnswer(response) {
+
+    const container = document.getElementById(
+        "ragAnswer"
+    );
+
+
+    const answer =
+        response.answer ||
+        "No answer was returned.";
+
+
+    const sources = Array.isArray(response.sources)
+        ? response.sources
+        : [];
+
+
+    let html = `
+
+        <h3>AI Generated Answer</h3>
+
+        <p>
+            ${escapeHTML(answer).replace(/\n/g, "<br>")}
+        </p>
+
+    `;
+
+
+    // Display retrieved sources.
+
+    if (sources.length > 0) {
+
+        html += `
+
+            <div class="rag-sources">
+
+                <h3>Retrieved Sources</h3>
+
+                <ul>
+
+        `;
+
+
+        sources.forEach(source => {
+
+            html += `
+
+                <li>
+
+                    <strong>
+                        ${escapeHTML(
+                            source.scheme_name || "Scheme"
+                        )}
+                    </strong>
+
+                    <br>
+
+                    Scheme ID:
+
+                    ${escapeHTML(
+                        source.scheme_id ?? "N/A"
+                    )}
+
+                    <br>
+
+                    Section:
+
+                    ${escapeHTML(
+                        source.section_name || "N/A"
+                    )}
+
+                </li>
+
+            `;
+
+        });
+
+
+        html += `
+
+                </ul>
+
+            </div>
+
+        `;
+
+    }
+
+
+    container.innerHTML = html;
+
+    container.style.display = "block";
+
 }
 
-if (ragQuestion) {
-    ragQuestion.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            handleRagQuestion();
-        }
-    });
-}
+
+/* =====================================
+   INITIALIZATION
+===================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        loadProfile();
+
+        console.log(
+            "Government Scheme Discovery System initialized."
+        );
+
+    }
+);

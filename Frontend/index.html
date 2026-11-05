@@ -4,442 +4,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover government schemes, benefits and eligibility information.">
-    <title>Government Scheme Discovery System</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Government Scheme Discovery</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="container header-content">
-            <a href="#home" class="logo">Scheme<span>Finder</span></a>
-
-            <nav aria-label="Main navigation">
-                <a href="#home">Home</a>
-                <a href="#search">Find Schemes</a>
-                <a href="#profile">Check Eligibility</a>
-                <a href="#discoveryResults">Results</a>
-                <a href="#askQuestion">Ask AI</a>
-                <a href="#about">About</a>
-            </nav>
-        </div>
-    </header>
-
-    <main>
-
-        <!-- Hero Section -->
-        <section class="hero" id="home">
-            <div class="container hero-content">
-                <p class="eyebrow">GOVERNMENT SCHEME DISCOVERY SYSTEM</p>
-
-                <h1>
-                    Discover Government Schemes That Matter to You
-                </h1>
-
-                <p class="hero-description">
-                    Search government schemes and explore their benefits,
-                    eligibility requirements and application procedures.
-                </p>
-
-                <a href="#search" class="primary-button">
-                    Explore Schemes
-                </a>
-            </div>
-        </section>
-
-        <!-- Search Section -->
-        <section class="search-section container" id="search">
-
-            <div class="section-heading">
-                <p class="eyebrow">SCHEME DISCOVERY</p>
-                <h2>Find Government Schemes</h2>
-
-                <p>
-                    Enter a topic or describe the scheme you are looking for.
-                </p>
-            </div>
-
-            <div class="search-panel">
-
-                <label for="searchQuery">
-                    What are you looking for?
-                </label>
-
-                <div class="search-input-group">
-
-                    <input
-                        type="text"
-                        id="searchQuery"
-                        placeholder="Example: Scholarships for college students"
-                        autocomplete="off"
-                    >
-
-                    <button id="searchButton" type="button">
-                        Search Schemes
-                    </button>
-
-                </div>
-
-                <div class="search-options">
-
-                    <div class="option-group">
-                        <label for="searchMethod">
-                            Search method
-                        </label>
-
-                        <select id="searchMethod">
-                            <option value="tfidf">TF-IDF Search</option>
-                            <option value="semantic">Semantic Search</option>
-                        </select>
-                    </div>
-
-                    <div class="option-group">
-                        <label for="resultLimit">
-                            Number of results
-                        </label>
-
-                        <select id="resultLimit">
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="15">15</option>
-                        </select>
-                    </div>
-
-                </div>
-            </div>
-
-            <div
-                id="statusMessage"
-                class="status-message"
-                aria-live="polite"
-            >
-                Enter a search query to discover government schemes.
-            </div>
-
-            <div class="results-header">
-                <h2>Search Results</h2>
-                <span id="resultCount"></span>
-            </div>
-
-            <div id="resultsContainer" class="results-container">
-
-                <div class="empty-state">
-                    <h3>Start discovering schemes</h3>
-                    <p>Your matching schemes will appear here.</p>
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- Profile and Eligibility Section -->
-        <section class="profile-section" id="profile">
-
-            <div class="container">
-
-                <div class="section-heading">
-                    <p class="eyebrow">PERSONALIZED DISCOVERY</p>
-
-                    <h2>Check Your Scheme Eligibility</h2>
-
-                    <p>
-                        Provide your details to find government schemes
-                        that may match your profile.
-                    </p>
-                </div>
-
-                <div class="profile-panel">
-
-                    <form id="profileForm" novalidate>
-
-                        <div class="form-grid">
-
-                            <div class="form-group">
-                                <label for="age">Age</label>
-
-                                <input
-                                    type="number"
-                                    id="age"
-                                    name="age"
-                                    min="0"
-                                    max="120"
-                                    step="1"
-                                    placeholder="Enter your age"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="annual_income">
-                                    Annual Family Income (₹)
-                                </label>
-
-                                <input
-                                    type="number"
-                                    id="annual_income"
-                                    name="annual_income"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="Enter annual income"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="state">State</label>
-
-                                <input
-                                    type="text"
-                                    id="state"
-                                    name="state"
-                                    placeholder="Example: Uttar Pradesh"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="occupation">Occupation</label>
-
-                                <input
-                                    type="text"
-                                    id="occupation"
-                                    name="occupation"
-                                    placeholder="Example: Student, Farmer"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="gender">Gender</label>
-
-                                <select id="gender" name="gender">
-                                    <option value="">Select gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                    <option value="prefer_not_to_say">
-                                        Prefer not to say
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="category">Social Category</label>
-
-                                <select id="category" name="category">
-                                    <option value="">Select category</option>
-                                    <option value="General">General</option>
-                                    <option value="OBC">OBC</option>
-                                    <option value="SC">SC</option>
-                                    <option value="ST">ST</option>
-                                    <option value="EWS">EWS</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-
-                        </div>
-
-                        <p class="form-note">
-                            Fields are optional. Providing more information
-                            may help the system evaluate more eligibility
-                            conditions. Missing information may require
-                            further verification.
-                        </p>
-
-                        <div class="form-actions">
-
-                            <button type="submit" id="profileSubmit">
-                                Save Profile
-                            </button>
-
-                            <button type="reset" class="reset-button">
-                                Clear Form
-                            </button>
-
-                        </div>
-
-                        <div
-                            id="profileStatus"
-                            class="status-message"
-                            aria-live="polite"
-                        ></div>
-
-                    </form>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- Discovery Results Section -->
-        <section
-            class="discovery-results-section"
-            id="discoveryResults"
-        >
-
-            <div class="container">
-
-                <div class="section-heading">
-                    <p class="eyebrow">YOUR DISCOVERY RESULTS</p>
-
-                    <h2>Government Schemes for Your Search</h2>
-
-                    <p>
-                        Review matching schemes and their eligibility status.
-                    </p>
-                </div>
-
-                <div class="results-summary" id="resultsSummary">
-                    <p>
-                        Submit a search and profile to view your results.
-                    </p>
-                </div>
-
-                <div class="eligibility-groups">
-
-                    <!-- Potentially Eligible -->
-                    <div class="eligibility-group">
-
-                        <div class="group-heading">
-                            <h3>Potentially Eligible</h3>
-                            <span id="eligibleCount">0</span>
-                        </div>
-
-                        <div
-                            id="eligibleResults"
-                            class="scheme-list"
-                        ></div>
-
-                    </div>
-
-                    <!-- Needs Verification -->
-                    <div class="eligibility-group">
-
-                        <div class="group-heading">
-                            <h3>Needs Verification</h3>
-                            <span id="verificationCount">0</span>
-                        </div>
-
-                        <div
-                            id="verificationResults"
-                            class="scheme-list"
-                        ></div>
-
-                    </div>
-
-                    <!-- Not Eligible -->
-                    <div class="eligibility-group">
-
-                        <div class="group-heading">
-                            <h3>Not Eligible</h3>
-                            <span id="notEligibleCount">0</span>
-                        </div>
-
-                        <div
-                            id="notEligibleResults"
-                            class="scheme-list"
-                        ></div>
-
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!--RAG Section-->
-<section class="rag-section" id="askQuestion">
-    <div class="container">
-        <div class="section-heading">
-            <p class="eyebrow">AI SCHEME ASSISTANT</p>
-            <h2>Ask Questions About Government Schemes</h2>
+<header class="navbar">
+    <nav>
+        <a href="#discover">Discover</a>
+        <a href="#profile">My Profile</a>
+        <a href="#recommendations">Recommendations</a>
+        <a href="#ask-ai">Ask AI</a>
+    </nav>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="hero-content">
+            <span class="eyebrow">GOVERNMENT SCHEME DISCOVERY SYSTEM</span>
+            <h1>Find government schemes that are meant for you.</h1>
             <p>
-                Ask about benefits, eligibility, required documents
-                and application procedures.
+                Discover government schemes, understand your eligibility,
+                and get answers to your questions using AI.
             </p>
+            <a href="#discover" class="primary-btn">Explore Schemes</a>
+        </div>
+    </section>
+
+    <section class="section" id="discover">
+        <div class="section-heading">
+            <span class="eyebrow">DISCOVER</span>
+            <h2>Find Government Schemes</h2>
+            <p>Describe the scheme or benefits you are looking for.</p>
         </div>
 
-        <div class="rag-panel">
-            <div class="form-group">
-                <label for="ragQuestion">Your question</label>
-                <textarea
-                    id="ragQuestion"
-                    rows="3"
-                    placeholder="Example: What documents are required for this scheme?"
-                ></textarea>
+        <div class="panel">
+            <textarea id="searchQuery"
+                placeholder="Example: I am a student looking for scholarships for higher education..."
+                rows="4"></textarea>
+
+            <div class="search-controls">
+                <select id="topK">
+                    <option value="5">Top 5 schemes</option>
+                    <option value="10" selected>Top 10 schemes</option>
+                    <option value="20">Top 20 schemes</option>
+                </select>
+                <button class="primary-btn" id="searchBtn"
+                    onclick="discoverSchemes()">Search Schemes</button>
             </div>
-            <div class="form-group">
-                    <label for="ragTopK">Context chunks</label>
-                    <select id="ragTopK">
-                        <option value="3">3</option>
-                        <option value="5" selected>5</option>
-                        <option value="10">10</option>
-                    </select>
+            <p id="searchStatus" class="status"></p>
+        </div>
+
+        <div id="searchResults" class="results-container"></div>
+    </section>
+
+    <section class="section alternate" id="profile">
+        <div class="section-heading">
+            <span class="eyebrow">PERSONALIZATION</span>
+            <h2>Your Eligibility Profile</h2>
+            <p>Enter your details to find schemes relevant to your situation.</p>
+        </div>
+
+        <div class="panel">
+            <form id="profileForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" min="1" max="120"
+                            placeholder="Enter your age" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" required>
+                            <option value="">Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state"
+                            placeholder="e.g. Uttar Pradesh" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="occupation">Occupation</label>
+                        <select id="occupation" required>
+                            <option value="">Select occupation</option>
+                            <option value="Student">Student</option>
+                            <option value="Farmer">Farmer</option>
+                            <option value="Self Employed">Self Employed</option>
+                            <option value="Business Owner">Business Owner</option>
+                            <option value="Employed">Employed</option>
+                            <option value="Unemployed">Unemployed</option>
+                            <option value="Homemaker">Homemaker</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="income">Annual Family Income (₹)</label>
+                        <input type="number" id="income" min="0"
+                            placeholder="e.g. 300000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="education">Education</label>
+                        <select id="education" required>
+                            <option value="">Select education</option>
+                            <option value="Below 10th">Below 10th</option>
+                            <option value="10th Pass">10th Pass</option>
+                            <option value="12th Pass">12th Pass</option>
+                            <option value="Graduate">Graduate</option>
+                            <option value="Postgraduate">Postgraduate</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Social Category</label>
+                        <select id="category">
+                            <option value="">Prefer not to say</option>
+                            <option value="General">General</option>
+                            <option value="OBC">OBC</option>
+                            <option value="SC">SC</option>
+                            <option value="ST">ST</option>
+                            <option value="EWS">EWS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="disability">Person with Disability?</label>
+                        <select id="disability">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <button type="button" id="askRagButton">Ask Question</button>
-
-            <div id="ragStatus" class="status-message" aria-live="polite"></div>
-            <div id="ragAnswer" class="rag-answer" aria-live="polite"></div>
-            <div id="ragSources" class="rag-sources"></div>
+                <button type="submit" class="primary-btn" id="saveProfileBtn">
+                    Save Profile & Find Schemes
+                </button>
+                <p id="profileStatus" class="status"></p>
+            </form>
         </div>
-    </div>
-</section>
+    </section>
 
+    <section class="section" id="recommendations">
+        <div class="section-heading">
+            <span class="eyebrow">PERSONALIZED RESULTS</span>
+            <h2>Recommended For You</h2>
+            <p>Schemes matched with your profile and eligibility.</p>
+        </div>
 
-        <!-- About Section -->
-        <section class="about-section" id="about">
-
-            <div class="container">
-
-                <h2>About the Project</h2>
-
-                <p>
-                    Government Scheme Discovery System uses information
-                    retrieval and semantic search techniques to help users
-                    find relevant government schemes.
-                </p>
-
+        <div id="recommendationResults" class="results-container">
+            <div class="empty-state">
+                Save your profile to see recommended schemes here.
             </div>
+        </div>
+    </section>
 
-        </section>
+    <section class="section alternate" id="ask-ai">
+        <div class="section-heading">
+            <span class="eyebrow">AI ASSISTANT · RAG</span>
+            <h2>Ask About Government Schemes</h2>
+            <p>Get answers based on information retrieved from scheme documents.</p>
+        </div>
 
-    </main>
+        <div class="panel ai-panel">
+            
+<div class="form-group">
+    <label for="ragSchemeName">Selected Government Scheme</label>
+    <input
+        type="text"
+        id="ragSchemeName"
+        placeholder="Enter scheme name"
+    
+    />
+    <input
+        type="hidden"
+        id="ragSchemeId"
+    />
+</div>
 
-    <!-- Scheme Details Dialog -->
-    <dialog id="schemeDetailsDialog" class="scheme-dialog">
 
-        <div class="dialog-header">
+            <label for="ragQuestion">Your question</label>
+            <textarea id="ragQuestion" rows="3"
+                placeholder="Example: What documents are required to apply for this scheme?"></textarea>
 
-            <h2 id="detailSchemeName">Scheme Details</h2>
-
-            <button
-                type="button"
-                id="closeDetailsButton"
-                class="close-button"
-                aria-label="Close details"
-            >
-                &times;
+            <button class="primary-btn" id="askBtn" onclick="askAI()">
+                Ask AI
             </button>
 
+            <p id="ragStatus" class="status"></p>
+
+            <div id="ragAnswer" class="rag-answer"></div>
         </div>
+    </section>
+</main>
 
-        <div id="schemeDetailsContent"></div>
+<footer>
+    <p>Making government schemes easier to discover and understand.</p>
+    <p>Government Scheme Discovery System</p>
+</footer>
 
-    </dialog>
-
-    <!-- Footer -->
-    <footer class="footer">
-
-        <div class="container">
-
-            <p>
-                Government Scheme Discovery System | Academic Project
-            </p>
-
-        </div>
-
-    </footer>
-
-    <script src="js/config.js"></script>
-    <script src="js/app.js"></script>
-
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
