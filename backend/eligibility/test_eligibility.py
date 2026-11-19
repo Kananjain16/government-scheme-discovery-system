@@ -64,32 +64,24 @@ def test_scheme_matching():
             "verification_status": "verified"
         }
     ]
-
-    # All conditions pass
     result = match_scheme_eligibility(
         conditions,
         {"occupation": "student", "age": 22}
     )
 
     assert result["status"] == "potentially_eligible"
-
-    # One mandatory condition fails
     result = match_scheme_eligibility(
         conditions,
         {"occupation": "farmer", "age": 22}
     )
 
     assert result["status"] == "not_eligible"
-
-    # Missing information
     result = match_scheme_eligibility(
         conditions,
         {"occupation": "student"}
     )
 
     assert result["status"] == "needs_verification"
-
-    # Pending condition
     conditions[0]["verification_status"] = "pending"
 
     result = match_scheme_eligibility(
@@ -98,8 +90,6 @@ def test_scheme_matching():
     )
 
     assert result["status"] == "needs_verification"
-
-    # No conditions
     result = match_scheme_eligibility([], {})
 
     assert result["status"] == "needs_verification"

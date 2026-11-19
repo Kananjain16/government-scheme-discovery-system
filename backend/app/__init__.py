@@ -1,11 +1,11 @@
 
 from flask import Flask
-from app.routes import search_bp
 from flask_cors import CORS
 
-def create_app():
 
+def create_app():
     app = Flask(__name__)
+
     CORS(
         app,
         resources={
@@ -16,7 +16,8 @@ def create_app():
                 ]
             }
         }
-    )    
+    )
+    from backend.app.routes import search_bp
 
     app.register_blueprint(search_bp)
 

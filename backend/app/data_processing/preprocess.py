@@ -6,14 +6,8 @@ from nltk.stem import WordNetLemmatizer
 
 from backend.database.db import get_connection
 
-
-# ---------------------------------
-# 1. Initialize NLP tools
-# ---------------------------------
-
 stop_words = set(stopwords.words("english"))
 
-# Preserve words that affect eligibility and conditions.
 important_words = {
     "no", "not", "nor", "never",
     "without", "only", "must",
@@ -25,11 +19,6 @@ important_words = {
 stop_words = stop_words - important_words
 
 lemmatizer = WordNetLemmatizer()
-
-
-# ---------------------------------
-# 2. Combine scheme information
-# ---------------------------------
 
 def generate_raw_text(scheme):
 
@@ -56,28 +45,19 @@ def generate_raw_text(scheme):
     return "\n".join(parts)
 
 
-# ---------------------------------
-# 3. Text preprocessing
-# ---------------------------------
-
 def preprocess_text(text):
 
-    # Convert to lowercase
     text = text.lower()
 
-    # Extract words and numbers.
-    # Numbers are preserved for age and income limits.
     tokens = re.findall(r"[a-z]+|\d+(?:\.\d+)?", text)
 
     processed_tokens = []
 
     for token in tokens:
 
-        # Remove common stop words
         if token in stop_words:
             continue
 
-        # Lemmatize words
         if token.isalpha():
             token = lemmatizer.lemmatize(token)
 
@@ -85,10 +65,6 @@ def preprocess_text(text):
 
     return " ".join(processed_tokens)
 
-
-# ---------------------------------
-# 4. Fetch and process schemes
-# ---------------------------------
 
 def process_schemes():
 
@@ -121,13 +97,10 @@ def process_schemes():
 
         for scheme in schemes:
 
-            # Generate original combined text
             raw_text = generate_raw_text(scheme)
 
-            # Generate normalized text
             processed_text = preprocess_text(raw_text)
 
-            # Insert or update existing document
             cursor.execute("""
                 INSERT INTO scheme_search_documents
                 (scheme_id, raw_text, processed_text)
@@ -163,12 +136,6 @@ def process_schemes():
 
         cursor.close()
         conn.close()
-
-
-# ---------------------------------
-# 5. Main execution
-# ---------------------------------
-
 if __name__ == "__main__":
 
     process_schemes()

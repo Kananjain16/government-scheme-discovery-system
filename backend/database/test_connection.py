@@ -1,7 +1,4 @@
-
 from backend.database.db import get_connection
-
-
 try:
 
     conn = get_connection()

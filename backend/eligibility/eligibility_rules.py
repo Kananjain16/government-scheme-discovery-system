@@ -1,6 +1,4 @@
-
 from decimal import Decimal, InvalidOperation
-
 ALLOWED_FIELDS = {
     "age",
     "annual_income",
@@ -144,8 +142,6 @@ def evaluate_condition(condition, profile):
 
     if isinstance(user_value, str) and not user_value.strip():
         return None
-
-    # Numeric comparisons
     if field in NUMERIC_FIELDS:
         try:
             user_value = float(user_value)
@@ -171,7 +167,6 @@ def evaluate_condition(condition, profile):
                 <= float(condition["max_value"])
             )
 
-    # Text comparisons
     else:
         expected_value = condition["value_text"]
 
@@ -228,8 +223,6 @@ def match_scheme_eligibility(conditions, profile):
 
         elif result is None:
             unknown_conditions.append(condition)
-
-    # A verified mandatory failure is decisive.
     if failed_conditions:
         return {
             "status": "not_eligible",

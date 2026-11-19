@@ -1,8 +1,3 @@
-
-/* =====================================
-   COMMON API FUNCTION
-===================================== */
-
 async function apiRequest(endpoint, body) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
@@ -29,11 +24,6 @@ async function apiRequest(endpoint, body) {
     return data;
 }
 
-
-/* =====================================
-   COMMON UI FUNCTIONS
-===================================== */
-
 function setStatus(id, message, type = "") {
     const element = document.getElementById(id);
 
@@ -56,14 +46,6 @@ function escapeHTML(value) {
         "'": "&#39;"
     })[char]);
 }
-
-
-/* =====================================
-   PROFILE MANAGEMENT
-===================================== */
-
-// Collect all eight frontend profile fields.
-
 function getProfile() {
     return {
         age: Number(document.getElementById("age").value),
@@ -86,12 +68,6 @@ function getProfile() {
     };
 }
 
-
-// IMPORTANT:
-// The current backend supports only six profile fields.
-// Education and disability remain saved locally but
-// are not sent to the eligibility engine.
-
 function getSupportedProfile(profile) {
     return {
         age: profile.age,
@@ -102,9 +78,6 @@ function getSupportedProfile(profile) {
         category: profile.category
     };
 }
-
-
-// Load saved profile from localStorage.
 
 function loadProfile() {
     const saved = localStorage.getItem("schemeSathiProfile");
@@ -141,12 +114,6 @@ function loadProfile() {
         console.error("Could not load saved profile:", error);
     }
 }
-
-
-/* =====================================
-   SAVE PROFILE AND FIND SCHEMES
-===================================== */
-
 document.getElementById("profileForm").addEventListener(
     "submit",
     async function(event) {
@@ -170,9 +137,6 @@ document.getElementById("profileForm").addEventListener(
 
             return;
         }
-
-        // Validate annual income.
-
         if (
             !Number.isFinite(profile.annual_income) ||
             profile.annual_income < 0
@@ -185,9 +149,6 @@ document.getElementById("profileForm").addEventListener(
 
             return;
         }
-
-        // Save complete profile locally.
-
         localStorage.setItem(
             "schemeSathiProfile",
             JSON.stringify(profile)
@@ -198,18 +159,9 @@ document.getElementById("profileForm").addEventListener(
             "Profile saved. Finding relevant schemes...",
             "success"
         );
-
-        // Automatically find schemes.
-
         await getRecommendations(profile);
     }
 );
-
-
-/* =====================================
-   SEMANTIC SCHEME DISCOVERY
-===================================== */
-
 async function discoverSchemes() {
 
     const query = document.getElementById("searchQuery")
@@ -223,10 +175,6 @@ async function discoverSchemes() {
 
     const resultsContainer =
         document.getElementById("searchResults");
-
-
-    // Validate query.
-
     if (!query) {
 
         setStatus(
@@ -271,9 +219,6 @@ async function discoverSchemes() {
         const fullProfile = savedProfile
             ? JSON.parse(savedProfile)
             : {};
-
-
-        // Send only supported fields to backend.
 
         const profile = getSupportedProfile(fullProfile);
 
@@ -324,88 +269,46 @@ async function discoverSchemes() {
 
     }
 }
-
-
-/* =====================================
-   PROFILE-BASED RECOMMENDATIONS
-===================================== */
-
 async function getRecommendations(profile) {
-
     const container = document.getElementById(
         "recommendationResults"
     );
-
     const button = document.getElementById(
         "saveProfileBtn"
     );
-
-
     button.disabled = true;
-
     container.innerHTML = "";
-
-
     try {
-
-        // Filter unsupported profile fields.
-
-        const supportedProfile = getSupportedProfile(profile);
-
-
-        // Call semantic discovery API.
-
-        const response = await apiRequest(
+      const response = await apiRequest(
             "/api/discover",
             {
                 query:
                     "Find government schemes relevant to my personal profile, occupation and eligibility.",
-
                 method: "semantic",
-
                 top_k: 10,
-
                 profile: supportedProfile
             }
         );
-
-
-        // Extract grouped results.
-
         const results = response.data?.results || {};
-
-
-        // Display recommendations.
-
         renderGroupedResults(
             results,
             "recommendationResults"
         );
-
-
         setStatus(
             "profileStatus",
             "Profile saved and recommendations generated.",
             "success"
         );
-
-
-        // Scroll to recommendations.
-
         document.getElementById(
             "recommendations"
         ).scrollIntoView({
             behavior: "smooth"
         });
-
-
     } catch (error) {
-
         console.error(
             "Recommendation error:",
             error
         );
-
         setStatus(
             "profileStatus",
             "Profile saved locally, but recommendations failed: " +
@@ -419,12 +322,6 @@ async function getRecommendations(profile) {
 
     }
 }
-
-
-/* =====================================
-   DISPLAY GROUPED SCHEME RESULTS
-===================================== */
-
 function renderGroupedResults(groups, containerId) {
 
     const container = document.getElementById(containerId);
@@ -518,12 +415,6 @@ function renderGroupedResults(groups, containerId) {
     container.innerHTML = html;
 
 }
-
-
-/* =====================================
-   CREATE SCHEME CARD
-===================================== */
-
 function createSchemeCard(scheme, group) {
 
     const name =
@@ -588,38 +479,17 @@ function createSchemeCard(scheme, group) {
     `;
 }
 
-
-/* =====================================
-   RAG QUESTION ANSWERING
-===================================== */
-
-// Select a scheme before asking AI questions.
-
-
 function askAboutScheme(schemeId, schemeName) {
-
-    // Store ID internally for the RAG backend.
     document.getElementById("ragSchemeId").value =
         schemeId ?? "";
-
-    // Display scheme name to the user.
     document.getElementById("ragSchemeName").value =
         schemeName || "";
-
-    // Scroll to AI section.
     document.getElementById("ask-ai").scrollIntoView({
         behavior: "smooth"
     });
 
     document.getElementById("ragQuestion").focus();
 }
-
-
-
-/* =====================================
-   ASK AI ABOUT GOVERNMENT SCHEMES
-===================================== */
-
 async function askAI() {
 
     const question = document.getElementById(
@@ -641,9 +511,6 @@ async function askAI() {
         "ragAnswer"
     );
 
-
-    // Validate question.
-
     if (!question) {
 
         setStatus(
@@ -654,10 +521,6 @@ async function askAI() {
 
         return;
     }
-
-
-    // Prepare RAG request.
-
     const payload = {
 
         question: question,
@@ -665,10 +528,6 @@ async function askAI() {
         top_k: 5
 
     };
-
-
-    // Add scheme ID if selected.
-
     if (schemeIdValue) {
 
         const schemeId = Number(schemeIdValue);
@@ -709,15 +568,10 @@ async function askAI() {
 
     try {
 
-        // Call RAG API.
-
         const response = await apiRequest(
             "/api/rag/ask",
             payload
         );
-
-
-        // Display generated answer and sources.
 
         displayRAGAnswer(response);
 
@@ -748,11 +602,6 @@ async function askAI() {
 
 }
 
-
-/* =====================================
-   DISPLAY RAG ANSWER AND SOURCES
-===================================== */
-
 function displayRAGAnswer(response) {
 
     const container = document.getElementById(
@@ -779,10 +628,6 @@ function displayRAGAnswer(response) {
         </p>
 
     `;
-
-
-    // Display retrieved sources.
-
     if (sources.length > 0) {
 
         html += `
@@ -815,26 +660,18 @@ function displayRAGAnswer(response) {
                     ${escapeHTML(
                         source.scheme_id ?? "N/A"
                     )}
-
                     <br>
-
                     Section:
-
                     ${escapeHTML(
                         source.section_name || "N/A"
                     )}
-
                 </li>
-
             `;
 
         });
 
-
         html += `
-
                 </ul>
-
             </div>
 
         `;
@@ -847,12 +684,6 @@ function displayRAGAnswer(response) {
     container.style.display = "block";
 
 }
-
-
-/* =====================================
-   INITIALIZATION
-===================================== */
-
 document.addEventListener(
     "DOMContentLoaded",
     function() {

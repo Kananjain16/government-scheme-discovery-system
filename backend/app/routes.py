@@ -3,24 +3,18 @@ import logging
 
 from flask import Blueprint, request, jsonify
 
-from app.retrieval.tfidf_search import search_schemes
-from app.retrieval.semantic_search import search_semantic
+from backend.app.retrieval.semantic_search import search_semantic
+from backend.app.discovery import discover_schemes
+from backend.eligibility.eligibility_rules import match_scheme_eligibility
+from backend.eligibility.eligibility_service import get_scheme_conditions
+from backend.app.rag.rag_pipeline import answer_question
+from backend.app.rag.llm_client import GeminiServiceError
 
-from app.discovery import discover_schemes
-
-from eligibility.eligibility_rules import match_scheme_eligibility
-from eligibility.eligibility_service import get_scheme_conditions
-from flask import request, jsonify
-from app.rag.rag_pipeline import answer_question
 
 logger = logging.getLogger(__name__)
 
 search_bp = Blueprint("search", __name__)
 
-
-# ==========================================
-# SEARCH API
-# ==========================================
 
 @search_bp.route("/api/search", methods=["GET"])
 def search():
@@ -39,51 +33,35 @@ def search():
             "message": "Search query is too long."
         }), 400
 
-    method = request.args.get("method", "tfidf").lower()
-
-    if method not in ("tfidf", "semantic"):
-        return jsonify({
-            "success": False,
-            "message": "Method must be tfidf or semantic."
-        }), 400
-
     try:
-
-        if method == "semantic":
-            results = search_semantic(query, top_k=10)
-        else:
-            results = search_schemes(query, top_k=10)
+        results = search_semantic(query, top_k=10)
 
         return jsonify({
             "success": True,
             "query": query,
-            "method": method,
+            "method": "semantic",
             "total_results": len(results),
             "results": results
         }), 200
 
     except FileNotFoundError:
 
-        logger.exception("Search index not found.")
+        logger.exception("Semantic search index not found.")
 
         return jsonify({
             "success": False,
-            "message": "Search index not found."
+            "message": "Semantic search index not found."
         }), 503
 
     except Exception:
 
-        logger.exception("Error occurred during scheme search.")
+        logger.exception("Error occurred during semantic search.")
 
         return jsonify({
             "success": False,
             "message": "An internal error occurred while searching."
         }), 500
 
-
-# ==========================================
-# ELIGIBILITY CHECK API
-# ==========================================
 
 @search_bp.route("/api/eligibility/check", methods=["POST"])
 def check_eligibility():
@@ -199,23 +177,17 @@ def check_eligibility():
         }), 500
 
 
-# ==========================================
-# SCHEME DISCOVERY API
-# ==========================================
-
 @search_bp.route("/api/discover", methods=["POST"])
 def discover():
 
     data = request.get_json(silent=True)
 
-    # 1. Validate request body
     if not isinstance(data, dict):
         return jsonify({
             "success": False,
             "message": "A valid JSON request body is required."
         }), 400
 
-    # 2. Validate query
     query = data.get("query")
 
     if not isinstance(query, str) or not query.strip():
@@ -232,24 +204,6 @@ def discover():
             "message": "Search query is too long."
         }), 400
 
-    # 3. Validate retrieval method
-    method = data.get("method", "tfidf")
-
-    if not isinstance(method, str):
-        return jsonify({
-            "success": False,
-            "message": "Method must be tfidf or semantic."
-        }), 400
-
-    method = method.lower().strip()
-
-    if method not in ("tfidf", "semantic"):
-        return jsonify({
-            "success": False,
-            "message": "Method must be tfidf or semantic."
-        }), 400
-
-    # 4. Validate top_k
     top_k = data.get("top_k", 10)
 
     if (
@@ -262,7 +216,6 @@ def discover():
             "message": "top_k must be between 1 and 50."
         }), 400
 
-    # 5. Validate profile
     profile = data.get("profile", {})
 
     if not isinstance(profile, dict):
@@ -286,7 +239,6 @@ def discover():
             "message": "Profile contains unsupported fields."
         }), 400
 
-    # 6. Validate numeric fields
     for field in ("age", "annual_income"):
 
         value = profile.get(field)
@@ -314,13 +266,11 @@ def discover():
                     "message": f"{field} cannot be negative."
                 }), 400
 
-    # 7. Run discovery engine
     try:
 
         result = discover_schemes(
             query=query,
             profile=profile,
-            method=method,
             top_k=top_k
         )
 
@@ -332,18 +282,18 @@ def discover():
 
     except FileNotFoundError:
 
-        logger.exception("Discovery index not found.")
+        logger.exception("Semantic discovery index not found.")
 
         return jsonify({
             "success": False,
             "message": "Required search index not found."
         }), 503
 
-    except ValueError as e:
+    except ValueError as error:
 
         return jsonify({
             "success": False,
-            "message": str(e)
+            "message": str(error)
         }), 400
 
     except Exception:
@@ -360,7 +310,7 @@ def discover():
 def ask_rag():
 
     try:
-        # 1. Get JSON request body
+
         data = request.get_json(silent=True)
 
         if not isinstance(data, dict):
@@ -369,12 +319,10 @@ def ask_rag():
                 "error": "Request body must be valid JSON."
             }), 400
 
-        # 2. Extract request parameters
         question = data.get("question")
         scheme_id = data.get("scheme_id")
         top_k = data.get("top_k", 5)
 
-        # 3. Validate question
         if not isinstance(question, str) or not question.strip():
             return jsonify({
                 "success": False,
@@ -383,7 +331,6 @@ def ask_rag():
 
         question = question.strip()
 
-        # 4. Validate scheme_id
         if scheme_id is not None:
 
             if (
@@ -396,7 +343,6 @@ def ask_rag():
                     "error": "scheme_id must be a positive integer."
                 }), 400
 
-        # 5. Validate top_k
         if (
             isinstance(top_k, bool)
             or not isinstance(top_k, int)
@@ -408,18 +354,15 @@ def ask_rag():
                 "error": "top_k must be an integer between 1 and 20."
             }), 400
 
-        # 6. Call existing RAG pipeline
         result = answer_question(
             question=question,
             scheme_id=scheme_id,
             top_k=top_k
         )
 
-        # 7. Extract generated answer and sources
         answer = result.get("answer", "")
         sources = result.get("sources", [])
 
-        # 8. Return response
         return jsonify({
             "success": True,
             "question": question,
@@ -428,12 +371,38 @@ def ask_rag():
             "context_found": len(sources) > 0
         }), 200
 
-    except Exception as e:
+    except GeminiServiceError as error:
 
-        logging.exception("RAG API failed")
+        logger.warning(
+            "Gemini service error: %s",
+            error.user_message
+        )
 
         return jsonify({
             "success": False,
-            "error": "An error occurred while processing the RAG request.",
-            "details": str(e)
+            "error": error.user_message,
+            "sources": error.sources
+        }), error.status_code
+
+    except ValueError as error:
+
+        logger.warning(
+            "Invalid RAG request: %s",
+            str(error)
+        )
+
+        return jsonify({
+            "success": False,
+            "error": str(error),
+            "sources": []
+        }), 400
+
+    except Exception:
+
+        logger.exception("RAG API failed.")
+
+        return jsonify({
+            "success": False,
+            "error": "An unexpected error occurred while processing the RAG request.",
+            "sources": []
         }), 500

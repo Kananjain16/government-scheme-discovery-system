@@ -9,8 +9,6 @@ from database.db import get_connection
 
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-
-# Load model once instead of loading it for every query.
 _model = None
 
 
@@ -48,19 +46,12 @@ def retrieve_relevant_chunks(
 
     model = load_model()
 
-    # ---------------------------------
-    # STEP 1: Generate query embedding
-    # ---------------------------------
-
     query_embedding = model.encode(
         query,
         convert_to_numpy=True,
         normalize_embeddings=True
     )
 
-    # ---------------------------------
-    # STEP 2: Retrieve stored chunks
-    # ---------------------------------
 
     connection = get_connection()
 
@@ -111,10 +102,6 @@ def retrieve_relevant_chunks(
 
         return []
 
-    # ---------------------------------
-    # STEP 3: Calculate similarity
-    # ---------------------------------
-
     results = []
 
     for chunk in stored_chunks:
@@ -135,9 +122,6 @@ def retrieve_relevant_chunks(
         if stored_embedding.shape != query_embedding.shape:
 
             continue
-
-        # Both embeddings are normalized.
-        # Dot product = cosine similarity.
 
         similarity = float(
             np.dot(query_embedding, stored_embedding)
@@ -160,10 +144,6 @@ def retrieve_relevant_chunks(
             "similarity_score": similarity
 
         })
-
-    # ---------------------------------
-    # STEP 4: Rank results
-    # ---------------------------------
 
     results.sort(
         key=lambda item: item["similarity_score"],

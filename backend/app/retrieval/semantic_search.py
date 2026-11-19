@@ -13,11 +13,7 @@ from database.db import get_connection
 
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-
-# Load the model once, not on every search request.
 model = SentenceTransformer(MODEL_NAME)
-
-# Cache the database index in memory.
 _index = None
 
 
@@ -78,8 +74,6 @@ def load_semantic_index():
         raise ValueError(
             f"Unexpected embedding matrix shape: {matrix.shape}"
         )
-
-    # The stored embeddings were normalized during generation.
     _index = (matrix, scheme_documents)
 
     print("Semantic index loaded.")
@@ -103,9 +97,6 @@ def search_semantic(query, top_k=10):
     )
 
     query_vector = query_embedding[0]
-
-    # Dot product equals cosine similarity because vectors
-    # are normalized to unit length.
     scores = np.dot(matrix, query_vector)
 
     ranked_indices = np.argsort(scores)[::-1][:top_k]

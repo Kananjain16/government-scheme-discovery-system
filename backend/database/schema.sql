@@ -1,6 +1,4 @@
-
 USE government_scheme_db;
-
 CREATE TABLE IF NOT EXISTS schemes (
     scheme_id INT AUTO_INCREMENT PRIMARY KEY,
     scheme_name VARCHAR(500) NOT NULL,

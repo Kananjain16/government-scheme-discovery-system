@@ -1,15 +1,15 @@
-
 import os
 import time
 import logging
+import re
 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-
-# Load environment variables
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -20,15 +20,51 @@ MODEL_NAME = os.getenv(
 
 if not API_KEY:
     raise RuntimeError(
-        "GEMINI_API_KEY is missing. "
-        "Check your .env file."
+        "GEMINI_API_KEY is missing. Check your .env file."
     )
 
-
-# Initialize Gemini client
 client = genai.Client(api_key=API_KEY)
 
-logger = logging.getLogger(__name__)
+
+class GeminiServiceError(Exception):
+    """Represents a Gemini API failure."""
+
+    def __init__(
+        self,
+        message,
+        status_code=503,
+        sources=None
+    ):
+        super().__init__(message)
+
+        self.status_code = status_code
+        self.sources = sources or []
+
+        self.user_message = message
+
+
+def get_error_code(error):
+
+    code = getattr(error, "code", None)
+
+    if code is None:
+        code = getattr(error, "status_code", None)
+
+    if code is not None:
+        try:
+            return int(code)
+        except (ValueError, TypeError):
+            pass
+
+    match = re.search(
+        r"\b(400|401|403|404|429|500|502|503|504)\b",
+        str(error)
+    )
+
+    if match:
+        return int(match.group(1))
+
+    return None
 
 
 def generate_answer(prompt, max_retries=3):
@@ -54,46 +90,80 @@ def generate_answer(prompt, max_retries=3):
 
             answer = response.text
 
-            if not answer:
-                raise RuntimeError(
-                    "Gemini returned an empty response."
+            if not answer or not answer.strip():
+                raise GeminiServiceError(
+                    "Gemini returned an empty response.",
+                    status_code=502
                 )
 
-            logger.info("Gemini response generated successfully.")
+            logger.info(
+                "Gemini response generated successfully."
+            )
 
             return answer.strip()
 
+        except GeminiServiceError:
+            raise
+
         except Exception as error:
+
+            status_code = get_error_code(error)
 
             error_message = str(error)
 
-            retryable = any(
-                code in error_message
-                for code in ["503", "429", "500", "504"]
-            )
+            # Do not retry quota errors.
+            if status_code == 429:
 
-            if not retryable:
-                logger.exception("Gemini API request failed.")
-                raise
+                logger.error(
+                    "Gemini quota/rate limit error: %s",
+                    error_message
+                )
 
-            if attempt == max_retries - 1:
+                raise GeminiServiceError(
+                    "Gemini API quota or rate limit exceeded. "
+                    "Check your Google AI Studio quota and billing.",
+                    status_code=429
+                ) from error
+            retryable = status_code in (500, 503, 504)
+
+            if retryable and attempt < max_retries - 1:
+
+                wait_time = 2 ** (attempt + 1)
+
+                logger.warning(
+                    "Gemini temporarily unavailable. "
+                    "Attempt %s/%s. Retrying in %s seconds.",
+                    attempt + 1,
+                    max_retries,
+                    wait_time
+                )
+
+                time.sleep(wait_time)
+                continue
+
+            if status_code in (500, 503, 504):
+
                 logger.error(
                     "Gemini failed after %s attempts: %s",
                     max_retries,
                     error_message
                 )
-                raise
 
-            wait_time = 2 ** (attempt + 1)
+                raise GeminiServiceError(
+                    "Gemini is temporarily unavailable. "
+                    "Please try again later.",
+                    status_code=status_code
+                ) from error
 
-            logger.warning(
-                "Gemini temporarily unavailable. "
-                "Attempt %s/%s. Retrying in %s seconds.",
-                attempt + 1,
-                max_retries,
-                wait_time
-            )
+            logger.exception("Gemini API request failed.")
 
-            time.sleep(wait_time)
+            raise GeminiServiceError(
+                "Unable to generate an AI response. "
+                "Please check your API configuration.",
+                status_code=status_code or 502
+            ) from error
 
-    raise RuntimeError("Gemini request failed.")
+    raise GeminiServiceError(
+        "Gemini request failed.",
+        status_code=503
+    )

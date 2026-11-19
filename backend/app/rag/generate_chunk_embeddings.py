@@ -24,10 +24,6 @@ def generate_chunks():
 
     print("Embedding model loaded successfully.")
 
-    # ---------------------------------
-    # STEP 1: Retrieve schemes from MySQL
-    # ---------------------------------
-
     connection = get_connection()
 
     cursor = connection.cursor(dictionary=True)
@@ -61,10 +57,6 @@ def generate_chunks():
 
     total_embeddings = 0
 
-    # ---------------------------------
-    # STEP 2: Process each scheme
-    # ---------------------------------
-
     for scheme_number, scheme in enumerate(schemes, start=1):
 
         scheme_id = scheme["scheme_id"]
@@ -75,8 +67,6 @@ def generate_chunks():
             f"\nProcessing {scheme_number}/{len(schemes)}: "
             f"{scheme_name}"
         )
-
-        # Organize information by section
 
         sections = {
 
@@ -92,19 +82,11 @@ def generate_chunks():
 
         }
 
-        # Delete old chunks for this scheme.
-        # This ensures that rerunning the script does not
-        # leave outdated chunks behind.
-
         delete_scheme_chunks(scheme_id)
 
         chunk_index = 0
 
         scheme_chunk_count = 0
-
-        # ---------------------------------
-        # STEP 3: Split information
-        # ---------------------------------
 
         for section_name, content in sections.items():
 
@@ -122,9 +104,6 @@ def generate_chunks():
 
                 continue
 
-            # ---------------------------------
-            # STEP 4: Generate embeddings
-            # ---------------------------------
 
             embeddings = model.encode(
                 chunks,
@@ -132,10 +111,6 @@ def generate_chunks():
                 normalize_embeddings=True,
                 show_progress_bar=False
             )
-
-            # ---------------------------------
-            # STEP 5: Save chunks and embeddings
-            # ---------------------------------
 
             save_chunks(
                 scheme_id=scheme_id,
@@ -157,10 +132,6 @@ def generate_chunks():
             f"Chunks generated for this scheme: "
             f"{scheme_chunk_count}"
         )
-
-    # ---------------------------------
-    # STEP 6: Final summary
-    # ---------------------------------
 
     print("\n===================================")
 

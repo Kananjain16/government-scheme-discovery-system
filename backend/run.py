@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from app import create_app
+from backend.app import create_app
+
 
 app = create_app()
 
@@ -9,8 +10,6 @@ if __name__ == "__main__":
 from backend.database.db import get_connection, create_tables
 
 app = Flask(__name__)
-
-# Allow frontend applications to communicate with Flask
 CORS(app)
 
 @app.route("/", methods=["GET"])
@@ -26,7 +25,6 @@ def get_schemes():
     conn = get_connection()
 
     try:
-        # Get pagination parameters
         page = request.args.get("page", 1, type=int)
         limit = request.args.get("limit", 20, type=int)
 
@@ -36,8 +34,6 @@ def get_schemes():
             }), 400
 
         offset = (page - 1) * limit
-
-        # Fetch schemes
         schemes = conn.execute(
             """
             SELECT *
@@ -47,8 +43,6 @@ def get_schemes():
             """,
             (limit, offset)
         ).fetchall()
-
-        # Count total records
         total = conn.execute(
             "SELECT COUNT(*) FROM schemes"
         ).fetchone()[0]

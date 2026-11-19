@@ -42,8 +42,6 @@ def precision_at_k(ranked_ids, relevant_ids, k):
         scheme_id in relevant_ids
         for scheme_id in top_k
     )
-
-    # Standard P@K uses K as the denominator.
     return relevant_count / k
 
 
